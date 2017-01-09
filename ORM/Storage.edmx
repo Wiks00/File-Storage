@@ -1,0 +1,468 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+      <Schema Namespace="Хранилище StorageModel" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <!--Ошибки, обнаруженные при создании:
+предупреждение 6002: В таблице или представлении "Storage.dbo.Association" не определен первичный ключ. Ключ был выведен, а определение таблицы или представления было создано в режиме только для чтения.-->
+        <EntityType Name="Association">
+          <Key>
+            <PropertyRef Name="fileId" />
+            <PropertyRef Name="fileTypeId" />
+          </Key>
+          <Property Name="fileId" Type="bigint" Nullable="false" />
+          <Property Name="fileTypeId" Type="bigint" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Files">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="idFile" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="content" Type="varbinary(max)" />
+          <Property Name="folderId" Type="bigint" Nullable="false" />
+          <Property Name="dateTime" Type="date" Nullable="false" />
+          <Property Name="name" Type="varchar" MaxLength="1000" Nullable="false" />
+        </EntityType>
+        <EntityType Name="FileTypes">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="typeName" Type="varchar" MaxLength="100" Nullable="false" />
+          <Property Name="format" Type="varchar" MaxLength="1000" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Folders">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="bigint" Nullable="false" />
+          <Property Name="ownerId" Type="bigint" Nullable="false" />
+          <Property Name="name" Type="varchar" MaxLength="1000" Nullable="false" />
+          <Property Name="dateTime" Type="date" Nullable="false" />
+          <Property Name="level" Type="int" Nullable="false" />
+          <Property Name="leftKey" Type="int" Nullable="false" />
+          <Property Name="rightKey" Type="int" Nullable="false" />
+        </EntityType>
+        <!--Ошибки, обнаруженные при создании:
+предупреждение 6002: В таблице или представлении "Storage.dbo.Membership" не определен первичный ключ. Ключ был выведен, а определение таблицы или представления было создано в режиме только для чтения.-->
+        <EntityType Name="Membership">
+          <Key>
+            <PropertyRef Name="userId" />
+            <PropertyRef Name="roleId" />
+          </Key>
+          <Property Name="userId" Type="bigint" Nullable="false" />
+          <Property Name="roleId" Type="bigint" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Roles">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="role" Type="varchar" MaxLength="100" Nullable="false" />
+        </EntityType>
+        <!--Ошибки, обнаруженные при создании:
+предупреждение 6002: В таблице или представлении "Storage.dbo.Share" не определен первичный ключ. Ключ был выведен, а определение таблицы или представления было создано в режиме только для чтения.-->
+        <EntityType Name="Share">
+          <Key>
+            <PropertyRef Name="userId" />
+            <PropertyRef Name="folderId" />
+          </Key>
+          <Property Name="userId" Type="bigint" Nullable="false" />
+          <Property Name="folderId" Type="bigint" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Users">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="login" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="email" Type="varchar" MaxLength="100" Nullable="false" />
+          <Property Name="password" Type="varchar" MaxLength="1000" Nullable="false" />
+        </EntityType>
+        <Association Name="Association_fk0">
+          <End Role="Files" Type="Self.Files" Multiplicity="1" />
+          <End Role="Association" Type="Self.Association" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Files">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="Association">
+              <PropertyRef Name="fileId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="Association_fk1">
+          <End Role="FileTypes" Type="Self.FileTypes" Multiplicity="1" />
+          <End Role="Association" Type="Self.Association" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="FileTypes">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="Association">
+              <PropertyRef Name="fileTypeId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="Files_fk0">
+          <End Role="Folders" Type="Self.Folders" Multiplicity="1" />
+          <End Role="Files" Type="Self.Files" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Folders">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="Files">
+              <PropertyRef Name="folderId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="Folders_fk0">
+          <End Role="Users" Type="Self.Users" Multiplicity="1" />
+          <End Role="Folders" Type="Self.Folders" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="Folders">
+              <PropertyRef Name="ownerId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="Membership_fk0">
+          <End Role="Users" Type="Self.Users" Multiplicity="1" />
+          <End Role="Membership" Type="Self.Membership" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="Membership">
+              <PropertyRef Name="userId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="Membership_fk1">
+          <End Role="Roles" Type="Self.Roles" Multiplicity="1" />
+          <End Role="Membership" Type="Self.Membership" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Roles">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="Membership">
+              <PropertyRef Name="roleId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="Share_fk0">
+          <End Role="Users" Type="Self.Users" Multiplicity="1" />
+          <End Role="Share" Type="Self.Share" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="Share">
+              <PropertyRef Name="userId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="Share_fk1">
+          <End Role="Folders" Type="Self.Folders" Multiplicity="1" />
+          <End Role="Share" Type="Self.Share" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Folders">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="Share">
+              <PropertyRef Name="folderId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="Хранилище StorageModelContainer">
+          <EntitySet Name="Files" EntityType="Self.Files" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="FileTypes" EntityType="Self.FileTypes" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Folders" EntityType="Self.Folders" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Roles" EntityType="Self.Roles" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Users" EntityType="Self.Users" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Association" EntityType="Self.Association" store:Type="Tables" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [Association].[fileId] AS [fileId], 
+    [Association].[fileTypeId] AS [fileTypeId]
+    FROM [dbo].[Association] AS [Association]</DefiningQuery>
+          </EntitySet>
+          <EntitySet Name="Membership" EntityType="Self.Membership" store:Type="Tables" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [Membership].[userId] AS [userId], 
+    [Membership].[roleId] AS [roleId]
+    FROM [dbo].[Membership] AS [Membership]</DefiningQuery>
+          </EntitySet>
+          <EntitySet Name="Share" EntityType="Self.Share" store:Type="Tables" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [Share].[userId] AS [userId], 
+    [Share].[folderId] AS [folderId]
+    FROM [dbo].[Share] AS [Share]</DefiningQuery>
+          </EntitySet>
+          <AssociationSet Name="Association_fk0" Association="Self.Association_fk0">
+            <End Role="Files" EntitySet="Files" />
+            <End Role="Association" EntitySet="Association" />
+          </AssociationSet>
+          <AssociationSet Name="Association_fk1" Association="Self.Association_fk1">
+            <End Role="FileTypes" EntitySet="FileTypes" />
+            <End Role="Association" EntitySet="Association" />
+          </AssociationSet>
+          <AssociationSet Name="Files_fk0" Association="Self.Files_fk0">
+            <End Role="Folders" EntitySet="Folders" />
+            <End Role="Files" EntitySet="Files" />
+          </AssociationSet>
+          <AssociationSet Name="Folders_fk0" Association="Self.Folders_fk0">
+            <End Role="Users" EntitySet="Users" />
+            <End Role="Folders" EntitySet="Folders" />
+          </AssociationSet>
+          <AssociationSet Name="Membership_fk0" Association="Self.Membership_fk0">
+            <End Role="Users" EntitySet="Users" />
+            <End Role="Membership" EntitySet="Membership" />
+          </AssociationSet>
+          <AssociationSet Name="Membership_fk1" Association="Self.Membership_fk1">
+            <End Role="Roles" EntitySet="Roles" />
+            <End Role="Membership" EntitySet="Membership" />
+          </AssociationSet>
+          <AssociationSet Name="Share_fk0" Association="Self.Share_fk0">
+            <End Role="Users" EntitySet="Users" />
+            <End Role="Share" EntitySet="Share" />
+          </AssociationSet>
+          <AssociationSet Name="Share_fk1" Association="Self.Share_fk1">
+            <End Role="Folders" EntitySet="Folders" />
+            <End Role="Share" EntitySet="Share" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema>
+    </edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="StorageModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityType Name="Files">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="idFile" Type="Guid" Nullable="false" />
+          <Property Name="content" Type="Binary" MaxLength="Max" FixedLength="false" />
+          <Property Name="folderId" Type="Int64" Nullable="false" />
+          <Property Name="dateTime" Type="DateTime" Nullable="false" Precision="0" />
+          <Property Name="name" Type="String" MaxLength="1000" FixedLength="false" Unicode="false" Nullable="false" />
+          <NavigationProperty Name="Folder" Relationship="Self.Files_fk0" FromRole="Files" ToRole="Folders" />
+          <NavigationProperty Name="FileTypes" Relationship="Self.Association" FromRole="Files" ToRole="FileTypes" />
+        </EntityType>
+        <EntityType Name="FileTypes">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="typeName" Type="String" MaxLength="100" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="format" Type="String" MaxLength="1000" FixedLength="false" Unicode="false" Nullable="false" />
+          <NavigationProperty Name="Files" Relationship="Self.Association" FromRole="FileTypes" ToRole="Files" />
+        </EntityType>
+        <EntityType Name="Folders">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int64" Nullable="false" />
+          <Property Name="ownerId" Type="Int64" Nullable="false" />
+          <Property Name="name" Type="String" MaxLength="1000" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="dateTime" Type="DateTime" Nullable="false" Precision="0" />
+          <Property Name="level" Type="Int32" Nullable="false" />
+          <Property Name="leftKey" Type="Int32" Nullable="false" />
+          <Property Name="rightKey" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="Files" Relationship="Self.Files_fk0" FromRole="Folders" ToRole="Files" />
+          <NavigationProperty Name="User" Relationship="Self.Folders_fk0" FromRole="Folders" ToRole="Users" />
+          <NavigationProperty Name="UsersShared" Relationship="Self.Share" FromRole="Folders" ToRole="Users" />
+        </EntityType>
+        <EntityType Name="Roles">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="role" Type="String" MaxLength="100" FixedLength="false" Unicode="false" Nullable="false" />
+          <NavigationProperty Name="Users" Relationship="Self.Membership" FromRole="Roles" ToRole="Users" />
+        </EntityType>
+        <EntityType Name="Users">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="login" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="email" Type="String" MaxLength="100" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="password" Type="String" MaxLength="1000" FixedLength="false" Unicode="false" Nullable="false" />
+          <NavigationProperty Name="Folders" Relationship="Self.Folders_fk0" FromRole="Users" ToRole="Folders" />
+          <NavigationProperty Name="Roles" Relationship="Self.Membership" FromRole="Users" ToRole="Roles" />
+          <NavigationProperty Name="FoldersShared" Relationship="Self.Share" FromRole="Users" ToRole="Folders" />
+        </EntityType>
+        <Association Name="Files_fk0">
+          <End Role="Folders" Type="Self.Folders" Multiplicity="1" />
+          <End Role="Files" Type="Self.Files" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Folders">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="Files">
+              <PropertyRef Name="folderId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="Folders_fk0">
+          <End Role="Users" Type="Self.Users" Multiplicity="1" />
+          <End Role="Folders" Type="Self.Folders" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="Folders">
+              <PropertyRef Name="ownerId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="Association">
+          <End Role="Files" Type="Self.Files" Multiplicity="*" />
+          <End Role="FileTypes" Type="Self.FileTypes" Multiplicity="*" />
+        </Association>
+        <Association Name="Membership">
+          <End Role="Users" Type="Self.Users" Multiplicity="*" />
+          <End Role="Roles" Type="Self.Roles" Multiplicity="*" />
+        </Association>
+        <Association Name="Share">
+          <End Role="Users" Type="Self.Users" Multiplicity="*" />
+          <End Role="Folders" Type="Self.Folders" Multiplicity="*" />
+        </Association>
+        <EntityContainer Name="StorageEntities" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="Files" EntityType="Self.Files" />
+          <EntitySet Name="FileTypes" EntityType="Self.FileTypes" />
+          <EntitySet Name="Folders" EntityType="Self.Folders" />
+          <EntitySet Name="Roles" EntityType="Self.Roles" />
+          <EntitySet Name="Users" EntityType="Self.Users" />
+          <AssociationSet Name="Files_fk0" Association="Self.Files_fk0">
+            <End Role="Folders" EntitySet="Folders" />
+            <End Role="Files" EntitySet="Files" />
+          </AssociationSet>
+          <AssociationSet Name="Folders_fk0" Association="Self.Folders_fk0">
+            <End Role="Users" EntitySet="Users" />
+            <End Role="Folders" EntitySet="Folders" />
+          </AssociationSet>
+          <AssociationSet Name="Association" Association="Self.Association">
+            <End Role="Files" EntitySet="Files" />
+            <End Role="FileTypes" EntitySet="FileTypes" />
+          </AssociationSet>
+          <AssociationSet Name="Membership" Association="Self.Membership">
+            <End Role="Users" EntitySet="Users" />
+            <End Role="Roles" EntitySet="Roles" />
+          </AssociationSet>
+          <AssociationSet Name="Share" Association="Self.Share">
+            <End Role="Users" EntitySet="Users" />
+            <End Role="Folders" EntitySet="Folders" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="Хранилище StorageModelContainer" CdmEntityContainer="StorageEntities">
+          <EntitySetMapping Name="Files">
+            <EntityTypeMapping TypeName="StorageModel.Files">
+              <MappingFragment StoreEntitySet="Files">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="idFile" ColumnName="idFile" />
+                <ScalarProperty Name="content" ColumnName="content" />
+                <ScalarProperty Name="folderId" ColumnName="folderId" />
+                <ScalarProperty Name="dateTime" ColumnName="dateTime" />
+                <ScalarProperty Name="name" ColumnName="name" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="FileTypes">
+            <EntityTypeMapping TypeName="StorageModel.FileTypes">
+              <MappingFragment StoreEntitySet="FileTypes">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="typeName" ColumnName="typeName" />
+                <ScalarProperty Name="format" ColumnName="format" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Folders">
+            <EntityTypeMapping TypeName="StorageModel.Folders">
+              <MappingFragment StoreEntitySet="Folders">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="ownerId" ColumnName="ownerId" />
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="dateTime" ColumnName="dateTime" />
+                <ScalarProperty Name="level" ColumnName="level" />
+                <ScalarProperty Name="leftKey" ColumnName="leftKey" />
+                <ScalarProperty Name="rightKey" ColumnName="rightKey" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Roles">
+            <EntityTypeMapping TypeName="StorageModel.Roles">
+              <MappingFragment StoreEntitySet="Roles">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="role" ColumnName="role" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Users">
+            <EntityTypeMapping TypeName="StorageModel.Users">
+              <MappingFragment StoreEntitySet="Users">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="login" ColumnName="login" />
+                <ScalarProperty Name="email" ColumnName="email" />
+                <ScalarProperty Name="password" ColumnName="password" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <AssociationSetMapping Name="Association" TypeName="StorageModel.Association" StoreEntitySet="Association">
+            <EndProperty Name="Files">
+              <ScalarProperty Name="id" ColumnName="fileId" />
+            </EndProperty>
+            <EndProperty Name="FileTypes">
+              <ScalarProperty Name="id" ColumnName="fileTypeId" />
+            </EndProperty>
+          </AssociationSetMapping>
+          <AssociationSetMapping Name="Membership" TypeName="StorageModel.Membership" StoreEntitySet="Membership">
+            <EndProperty Name="Users">
+              <ScalarProperty Name="id" ColumnName="userId" />
+            </EndProperty>
+            <EndProperty Name="Roles">
+              <ScalarProperty Name="id" ColumnName="roleId" />
+            </EndProperty>
+          </AssociationSetMapping>
+          <AssociationSetMapping Name="Share" TypeName="StorageModel.Share" StoreEntitySet="Share">
+            <EndProperty Name="Users">
+              <ScalarProperty Name="id" ColumnName="userId" />
+            </EndProperty>
+            <EndProperty Name="Folders">
+              <ScalarProperty Name="id" ColumnName="folderId" />
+            </EndProperty>
+          </AssociationSetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="false" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="Нет" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>
