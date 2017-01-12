@@ -36,32 +36,32 @@ namespace BLL.Services
         {
             return
                 fileRepository.GetByPredicate(
-                        file => file.name.ToLower().Contains(title.ToLower()))
+                        file => file.Title.ToLower().Contains(title.ToLower()))
                     .Select(item => item.ToDtoFile());
         }
 
         public void CreateFile(DtoFile e)
         {
-            fileRepository.Create(e.ToOrmFile());
+            fileRepository.Create(e.ToDalFile());
             uow.Commit();
         }
 
         public void DeleteFile(DtoFile e)
         {
-            fileRepository.Delete(e.ToOrmFile());
+            fileRepository.Delete(e.ToDalFile());
             uow.Commit();
         }
 
         public void UpdateFile(DtoFile e)
         {
-            fileRepository.Update(e.ToOrmFile());
+            fileRepository.Update(e.ToDalFile());
             uow.Commit();
         }
 
         public void UpdateFileTitle(string newTitle, long id)
         {
-            fileRepository.Update(file => file.id == id, file => file.name, newTitle);
-            fileRepository.Update(file => file.id == id, file => file.dateTime, DateTime.Now);
+            fileRepository.Update(file => file.ID == id, file => file.Title, newTitle);
+            fileRepository.Update(file => file.ID == id, file => file.DateTime, DateTime.Now);
             uow.Commit();
         }
     }

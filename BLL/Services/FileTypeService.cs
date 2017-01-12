@@ -34,19 +34,19 @@ namespace BLL.Services
 
         public void CreateFileType(DtoFileType e)
         {
-            fileTypeRepository.Create(e.ToOrmFileType());
+            fileTypeRepository.Create(e.ToDalFileType());
             uow.Commit();
         }
 
         public void DeleteFileType(DtoFileType e)
         {
-            fileTypeRepository.Delete(e.ToOrmFileType());
+            fileTypeRepository.Delete(e.ToDalFileType());
             uow.Commit();
         }
 
         public void UpdateFileType(DtoFileType e)
         {
-            fileTypeRepository.Update(e.ToOrmFileType());
+            fileTypeRepository.Update(e.ToDalFileType());
             uow.Commit();
         }
     }

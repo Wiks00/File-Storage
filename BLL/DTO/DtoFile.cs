@@ -14,7 +14,6 @@ namespace BLL.DTO
         }
 
         public long ID { get; set; }
-        public Guid IDFile { get; internal set; }
         public byte[] Data { get; set; }
         public DtoFolder Folder { get; set; }
         public DateTime DateTime { get; set; }

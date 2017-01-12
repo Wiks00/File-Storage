@@ -30,26 +30,26 @@ namespace BLL.Services
         public DtoRole GetRolesByTitle(string title)
         {
             return
-                roleRepository.GetByPredicate(role => role.role.ToLower().Contains(title.ToLower()))
+                roleRepository.GetByPredicate(role => role.Role.ToLower().Contains(title.ToLower()))
                     .FirstOrDefault()
                     .ToDtoRole();
         }
 
         public void CreateRole(DtoRole e)
         {
-            roleRepository.Create(e.ToOrmRole());
+            roleRepository.Create(e.ToDalRole());
             uow.Commit();
         }
 
         public void DeleteRole(DtoRole e)
         {
-            roleRepository.Delete(e.ToOrmRole());
+            roleRepository.Delete(e.ToDalRole());
             uow.Commit();
         }
 
         public void UpdateRole(DtoRole e)
         {
-            roleRepository.Update(e.ToOrmRole());
+            roleRepository.Update(e.ToDalRole());
             uow.Commit();
         }
     }

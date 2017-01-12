@@ -35,19 +35,19 @@ namespace BLL.Services
 
         public void CreateUser(DtoUser e)
         {
-            userRepository.Create(e.ToOrmUser());
+            userRepository.Create(e.ToDalUser());
             uow.Commit();
         }
 
         public void DeleteUser(DtoUser e)
         {
-            userRepository.Delete(e.ToOrmUser());
+            userRepository.Delete(e.ToDalUser());
             uow.Commit();
         }
 
         public void UpdateUser(DtoUser e)
         {
-            userRepository.Update(e.ToOrmUser());
+            userRepository.Update(e.ToDalUser());
             uow.Commit();
         }
 
@@ -58,31 +58,31 @@ namespace BLL.Services
             if (!ReferenceEquals(e.OldPassword, null) && !ReferenceEquals(e.NewPassword, null)
                 && e.NewPassword == e.ConfirmPassword && Crypto.VerifyHashedPassword(entityUser.Password, e.OldPassword))
             {
-                userRepository.Update(user => user.id == e.ID ,user => user.password ,Crypto.HashPassword(e.NewPassword));
+                userRepository.Update(user => user.ID == e.ID ,user => user.Password ,Crypto.HashPassword(e.NewPassword));
                 uow.Commit();
             }
         }
 
         public void ChangeLogin(string newLogin, long id)
         {
-            userRepository.Update(user => user.id == id , user => user.login , newLogin);
+            userRepository.Update(user => user.ID == id , user => user.Login , newLogin);
             uow.Commit();
         }
 
         public void ChangeEmail(string newEmail, long id)
         {
-            userRepository.Update(user => user.id == id, user => user.email, newEmail);
+            userRepository.Update(user => user.ID == id, user => user.Email, newEmail);
             uow.Commit();
         }
 
         public bool IsFreeEmail(string email)
         {
-            return !userRepository.GetByPredicate(user => user.email == email).Any();
+            return !userRepository.GetByPredicate(user => user.Email == email).Any();
         }
 
         public bool IsFreeLogin(string login)
         {
-            return !userRepository.GetByPredicate(user => user.login == login).Any();
+            return !userRepository.GetByPredicate(user => user.Email == login).Any();
         }
     }
 }

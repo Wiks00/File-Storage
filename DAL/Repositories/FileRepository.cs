@@ -6,9 +6,11 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using DAL.DTO;
 using DAL.Interfaces;
 using Logger;
 using ORM;
+using static DAL.Mappers.DalMapper;
 
 namespace DAL.Repositories
 {
@@ -23,77 +25,117 @@ namespace DAL.Repositories
             this.logger = logger;
         }
 
-        public IEnumerable<Files> GetAll()
+        public IEnumerable<DalFile> GetAll()
         {
-            return context.Set<Files>();
+            return context.Set<Files>().Select(item => item.ToDalFile());
         }
 
-        public Files GetById(long key)
+        public DalFile GetById(long key)
         {
             if (key < 0)
-                throw new ArgumentOutOfRangeException(nameof(key), "parametr can't be negative");
+            {
+                var error = new ArgumentOutOfRangeException(nameof(key), "parametr can't be negative");
+                logger.Error(error, error.Message);
+                throw error;               
+            }
 
-            return context.Set<Files>().FirstOrDefault(user => user.id == key);
+            return context.Set<Files>().FirstOrDefault(user => user.id == key).ToDalFile();
         }
 
-        public IEnumerable<Files> GetByPredicate(Func<Files, bool> func)
+        public IEnumerable<DalFile> GetByPredicate(Expression<Func<DalFile, bool>> func)
         {
             if (ReferenceEquals(func, null))
-                throw new ArgumentNullException(nameof(func), "parametr can't be null");
+            {
+                var error = new ArgumentNullException(nameof(func), "parametr can't be null");
+                logger.Error(error, error.Message);
+                throw error;
+            }
 
-            return context.Set<Files>().Where(func);
+            return context.Set<Files>().Where(Convert<DalFile, Files>(func)).Select(item => item.ToDalFile());
         }
 
-        public void Create(Files e)
+        public void Create(DalFile entity)
         {
-            if (ReferenceEquals(e, null))
-                throw new ArgumentNullException(nameof(e), "parametr can't be null");
+            if (ReferenceEquals(entity, null))
+            {
+                var error = new ArgumentNullException(nameof(entity), "parametr can't be null");
+                logger.Error(error, error.Message);
+                throw error;
+            }
 
-            context.Set<Files>().Add(e);
+            context.Set<Files>().Add(entity.ToOrmFile());
         }
 
-        public void Delete(Files e)
+        public void Delete(DalFile entity)
         {
-            if (ReferenceEquals(e, null))
-                throw new ArgumentNullException(nameof(e), "parametr can't be null");
+            if (ReferenceEquals(entity, null))
+            {
+                var error = new ArgumentNullException(nameof(entity), "parametr can't be null");
+                logger.Error(error, error.Message);
+                throw error;
+            }
 
-            var possibleUser = context.Set<Files>().Single(user => user.id == e.id);
+            var possibleUser = context.Set<Files>().Single(user => user.id == entity.ID);
 
             if (ReferenceEquals(possibleUser, null))
-                throw new ArgumentNullException(nameof(possibleUser), "didn't find equally File In database");
+            {
+                var error = new ArgumentNullException(nameof(possibleUser), "didn't find equally File In database");
+                logger.Error(error, error.Message);
+                throw error;
+            }
 
             context.Set<Files>().Remove(possibleUser);
         }
 
-        public void Update(Files e)
+        public void Update(DalFile entity)
         {
-            if (ReferenceEquals(e, null))
-                throw new ArgumentNullException(nameof(e), "parametr can't be null");
+            if (ReferenceEquals(entity, null))
+            {
+                var error = new ArgumentNullException(nameof(entity), "parametr can't be null");
+                logger.Error(error, error.Message);
+                throw error;
+            }
 
-            var entity = context.Set<Files>().Find(e.id);
+            var file = context.Set<Files>().Find(entity.ID);
+            var e = entity.ToOrmFile();
 
-            entity.Folder = e.Folder;
-            entity.dateTime = e.dateTime;
-            entity.folderId = e.folderId;
-            entity.name = e.name;
+            file.Folder = e.Folder;
+            file.dateTime = e.dateTime;
+            file.folderId = e.folderId;
+            file.name = e.name;
 
-            entity.content = e.content;
-            entity.FileTypes = e.FileTypes;
+            file.content = e.content;
+            file.FileTypes = e.FileTypes;
 
-            context.Entry(entity).State = EntityState.Modified;
+            context.Entry(file).State = EntityState.Modified;
         }
 
-        public void Update<TKey>(Func<Files, bool> func, Expression<Func<Files, TKey>> keyValue, TKey e)
+        public void Update<TKey>(Expression<Func<DalFile, bool>> func, Expression<Func<DalFile, TKey>> keyValue, TKey e)
         {
-            if (ReferenceEquals(func, null) || ReferenceEquals(func, null) || e.Equals(default(TKey)))
-                throw new ArgumentException("incorrect parametr(s) value");
+            if (ReferenceEquals(func, null) || ReferenceEquals(keyValue, null) || ReferenceEquals(e,null))
+            {
+                var error = new ArgumentException("incorrect parametr(s) value");
+                logger.Error(error, error.Message);
+                throw error;
+            }
 
             MemberExpression memberExpression = (MemberExpression)keyValue.Body;
-            string propName = memberExpression.Member.Name;
+            string propName;
 
-            Type t = typeof(Files);
+            if (memberExpression.Expression.GetType().ToString().Equals("System.Linq.Expressions.PropertyExpression"))
+            {
+                var param = (MemberExpression)memberExpression.Expression;
 
-            foreach (var entity in context.Set<Files>().Where(func))
+                propName = GetEqualProperty(typeof(DalFile).ToString(), param.Member.Name + "." + memberExpression.Member.Name);
+            }
+            else
+            {
+                propName = GetEqualProperty(typeof(DalFile).ToString(), memberExpression.Member.Name);
+            }          
+
+            Type t = typeof(DalFile);
+
+            foreach (var entity in context.Set<Files>().Where(Convert<DalFile,Files>(func)))
             {
                 MethodInfo method = t.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public).FirstOrDefault(mtd => mtd.Name.ToLower().Equals("set_" + propName));
                 method?.Invoke(entity, new object[] { e });

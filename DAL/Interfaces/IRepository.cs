@@ -8,7 +8,7 @@ using DAL.DTO;
 
 namespace DAL.Interfaces
 {
-    public interface IRepository<TEntity> where TEntity : class
+    public interface IRepository<TEntity> where TEntity : IEntity
     {
         /// <summary>
         /// Get all the table objects from database
@@ -21,6 +21,7 @@ namespace DAL.Interfaces
         /// </summary>
         /// <param name="key">id of the searching object</param>
         /// <returns>TEntity object</returns>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         TEntity GetById(long key);
 
         /// <summary>
@@ -28,25 +29,29 @@ namespace DAL.Interfaces
         /// </summary>
         /// <param name="func">search delegate</param>
         /// <returns>TEntity object</returns>
-        IEnumerable<TEntity> GetByPredicate(Func<TEntity, bool> func);
+        /// <exception cref="ArgumentNullException"></exception>
+        IEnumerable<TEntity> GetByPredicate(Expression<Func<TEntity, bool>> func);
 
         /// <summary>
         /// Insert the table object into database
         /// </summary>
-        /// <param name="e">inserting object</param>
-        void Create(TEntity e);
+        /// <param name="entity">inserting object</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        void Create(TEntity entity);
 
         /// <summary>
         /// Delete the table object from database
         /// </summary>
-        /// <param name="e">deleting object</param>
-        void Delete(TEntity e);
+        /// <param name="entity">deleting object</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        void Delete(TEntity entity);
 
         /// <summary>
         /// Update the table object in database
         /// </summary>
-        /// <param name="e">updating object</param>
-        void Update(TEntity e);
+        /// <param name="entity">updating object</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        void Update(TEntity entity);
 
         /// <summary>
         /// Update field of the table objects from database by delegate
@@ -55,6 +60,7 @@ namespace DAL.Interfaces
         /// <param name="func">search delegate</param>
         /// <param name="keyValue">filed</param>
         /// <param name="e">new property value</param>
-        void Update<TKey>(Func<TEntity, bool> func, Expression<Func<TEntity, TKey>> keyValue, TKey e);
+        /// <exception cref="ArgumentException"></exception>
+        void Update<TKey>(Expression<Func<TEntity, bool>> func, Expression<Func<TEntity, TKey>> keyValue, TKey e);
     }
 }

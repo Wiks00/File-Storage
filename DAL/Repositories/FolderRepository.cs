@@ -4,11 +4,15 @@ using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Security.Permissions;
 using System.Text;
 using System.Threading.Tasks;
+using DAL.DTO;
 using DAL.Interfaces;
+using DAL.Mappers;
 using Logger;
 using ORM;
+using static DAL.Mappers.DalMapper;
 
 namespace DAL.Repositories
 {
@@ -25,37 +29,50 @@ namespace DAL.Repositories
 
         #region iRepository   
 
-        public IEnumerable<Folders> GetAll()
+        public IEnumerable<DalFolder> GetAll()
         {
-            return context.Set<Folders>();
+            return context.Set<Folders>().Select(item => item.ToDalFolder());
         }
 
-        public Folders GetById(long key)
+        public DalFolder GetById(long key)
         {
             if (key < 0)
-                throw new ArgumentOutOfRangeException(nameof(key), "parametr can't be negative");
+            {
+                var error = new ArgumentOutOfRangeException(nameof(key), "parametr can't be negative");
+                logger.Error(error, error.Message);
+                throw error;
+            }
 
-            return context.Set<Folders>().FirstOrDefault(user => user.id == key);
+            return context.Set<Folders>().FirstOrDefault(user => user.id == key).ToDalFolder();
         }
 
-        public IEnumerable<Folders> GetByPredicate(Func<Folders, bool> func)
+        public IEnumerable<DalFolder> GetByPredicate(Expression<Func<DalFolder, bool>> func)
         {
             if (ReferenceEquals(func, null))
-                throw new ArgumentNullException(nameof(func), "parametr can't be null");
+            {
+                var error = new ArgumentNullException(nameof(func), "parametr can't be null");
+                logger.Error(error, error.Message);
+                throw error;
+            }
 
-            return context.Set<Folders>().Where(func);
+            return context.Set<Folders>().Where(Convert<DalFolder,Folders>(func)).Select(item => item.ToDalFolder());
         }
 
-        void IRepository<Folders>.Create(Folders e)
+        void IRepository<DalFolder>.Create(DalFolder entity)
         {
-            Create(e);
+            Create(entity.ToOrmFolder());
         }
 
-        public void Delete(Folders e)
+        public void Delete(DalFolder entity)
         {
-            if (ReferenceEquals(e, null))
-                throw new ArgumentNullException(nameof(e), "parametr can't be null");
+            if (ReferenceEquals(entity, null))
+            {
+                var error = new ArgumentNullException(nameof(entity), "parametr can't be null");
+                logger.Error(error, error.Message);
+                throw error;
+            }
 
+            var e = entity.ToOrmFolder();
 
             var possibleFolder = context.Set<Folders>().Single(user => user.id == e.id);
 
@@ -90,43 +107,67 @@ namespace DAL.Repositories
             }
         }
 
-        public void Update(Folders e)
+        public void Update(DalFolder entity)
         {
-            if (ReferenceEquals(e, null))
-                throw new ArgumentNullException(nameof(e), "parametr can't be null");
+            if (ReferenceEquals(entity, null))
+            {
+                var error = new ArgumentNullException(nameof(entity), "parametr can't be null");
+                logger.Error(error, error.Message);
+                throw error;
+            }
+
+            var e = entity.ToOrmFolder();
 
             if (ReferenceEquals(e.User, null) && e.ownerId.Equals(0))
-                throw new ArgumentException("incorrect Folder object");
+            {
+                var error = new ArgumentException("incorrect Folder object");
+                logger.Error(error, error.Message);
+                throw error;
+            }
 
+            var folder = context.Set<Folders>().Find(e.id);
 
-            var entity = context.Set<Folders>().Find(e.id);
+            folder.User = e.User;
+            folder.ownerId = e.ownerId;
+            folder.dateTime = e.dateTime;
+            folder.leftKey = e.leftKey;
+            folder.rightKey = e.rightKey;
+            folder.level = e.level;
+            folder.name = e.name;
 
-            entity.User = e.User;
-            entity.ownerId = e.ownerId;
-            entity.dateTime = e.dateTime;
-            entity.leftKey = e.leftKey;
-            entity.rightKey = e.rightKey;
-            entity.level = e.level;
-            entity.name = e.name;
+            folder.Files = e.Files;
+            folder.UsersShared = e.UsersShared;
 
-            entity.Files = e.Files;
-            entity.UsersShared = e.UsersShared;
-
-            context.Entry(entity).State = EntityState.Modified;
+            context.Entry(folder).State = EntityState.Modified;
         }
 
 
-        public void Update<TKey>(Func<Folders, bool> func, Expression<Func<Folders, TKey>> keyValue, TKey e)
+        public void Update<TKey>(Expression<Func<DalFolder, bool>> func, Expression<Func<DalFolder, TKey>> keyValue, TKey e)
         {
-            if (ReferenceEquals(func, null) || ReferenceEquals(func, null) || e.Equals(default(TKey)))
-                throw new ArgumentException("incorrect parametr(s) value");
+            if (ReferenceEquals(func, null) || ReferenceEquals(keyValue, null) || e.Equals(default(TKey)))
+            {
+                var error = new ArgumentException("incorrect parametr(s) value");
+                logger.Error(error, error.Message);
+                throw error;
+            }
 
             MemberExpression memberExpression = (MemberExpression)keyValue.Body;
-            string propName = memberExpression.Member.Name;
+            string propName;
+
+            if (memberExpression.Expression.GetType().ToString().Equals("System.Linq.Expressions.PropertyExpression"))
+            {
+                var param = (MemberExpression)memberExpression.Expression;
+
+                propName = GetEqualProperty(typeof(DalFile).ToString(), param.Member.Name + "." + memberExpression.Member.Name);
+            }
+            else
+            {
+                propName = GetEqualProperty(typeof(DalFile).ToString(), memberExpression.Member.Name);
+            }
 
             Type t = typeof(Folders);
 
-            foreach (var entity in context.Set<Folders>().Where(func))
+            foreach (var entity in context.Set<Folders>().Where(Convert<DalFolder,Folders>(func)))
             {
                 MethodInfo method = t.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public).FirstOrDefault(mtd => mtd.Name.ToLower().Equals("set_" + propName));
                 method?.Invoke(entity, new object[] { e });
@@ -141,12 +182,20 @@ namespace DAL.Repositories
         public void CreateRoot(long userID)
         {
             if (context.Set<Folders>().Count(a => a.ownerId == userID) > 0)
-                throw new ArgumentException("root folder for that user already exist", nameof(userID));
+            {
+                var error = new ArgumentException("root folder for that user already exist", nameof(userID));
+                logger.Error(error, error.Message);
+                throw error;
+            }
 
             Users user = context.Set<Users>().FirstOrDefault(usr => usr.id == userID);
 
             if (ReferenceEquals(user,null))
-                throw new ArgumentException("user with this user ID not found", nameof(userID));
+            {
+                var error = new ArgumentException("user with this user ID not found", nameof(userID));
+                logger.Error(error, error.Message);
+                throw error;
+            }
 
             long id = 0;
 
@@ -170,18 +219,28 @@ namespace DAL.Repositories
             });
         }
 
-        public void Move(Folders movingFolder, Folders toFolder)
+        public void Move(DalFolder movingFolder, DalFolder toFolder)
         {
             throw new NotImplementedException();
         }
 
-        public void Add(Folders parent, string newFolderName)
+        public void Add(DalFolder prnt, string newFolderName)
         {       
-            if(ReferenceEquals(parent,null))
-                throw new ArgumentNullException(nameof(parent),"folder can't be null");
+            if(ReferenceEquals(prnt, null))
+            {
+                var error = new ArgumentNullException(nameof(prnt),"folder can't be null");
+                logger.Error(error, error.Message);
+                throw error;
+            }
 
             if (string.IsNullOrEmpty(newFolderName))
-                throw new ArgumentNullException(nameof(newFolderName), "new folder name can't be null or empty");
+            {
+                var error = new ArgumentNullException(nameof(newFolderName), "new folder name can't be null or empty");
+                logger.Error(error, error.Message);
+                throw error;
+            }
+
+            var parent = prnt.ToOrmFolder();
 
             int leftKey = parent.rightKey;
             int rightKey = parent.rightKey + 1;
@@ -218,13 +277,26 @@ namespace DAL.Repositories
             });
         }
 
-        public void InsertFiles(Folders folder, params Files[] files)
+        public void InsertFiles(DalFolder fldr, params DalFile[] fls)
         {
-            if(ReferenceEquals(folder,null))
-                throw new ArgumentNullException(nameof(folder),"folder can't be null");
+            if(ReferenceEquals(fldr, null))
+            {
+                var error = new ArgumentNullException(nameof(fldr),"folder can't be null");
+                logger.Error(error, error.Message);
+                throw error;
+            }
 
-            if (files.Length == 0)
-                throw new ArgumentException("invalid files count",nameof(files));
+            if (fls.Length == 0)
+            {
+                var error = new ArgumentOutOfRangeException(nameof(fls),"invalid files count");
+                logger.Error(error, error.Message);
+                throw error;
+            }
+
+            var enumerable = fls.Select(item => item.ToOrmFile());
+            var folder = fldr.ToOrmFolder();
+
+            var files = enumerable as Files[] ?? enumerable.ToArray();
 
             foreach (Files file in files)
             {
@@ -241,13 +313,27 @@ namespace DAL.Repositories
             context.Entry(folder).State = EntityState.Modified;
         }
 
-        public void MoveFiles(Folders newFolder, params Files[] files)
+        public void MoveFiles(DalFolder newFldr, params DalFile[] fls)
         {
-            if (ReferenceEquals(newFolder, null))
-                throw new ArgumentNullException(nameof(newFolder), "folder can't be null");
+            if (ReferenceEquals(newFldr, null))
+            {
+                var error = new ArgumentNullException(nameof(newFldr), "folder can't be null");
+                logger.Error(error, error.Message);
+                throw error;
+            }
 
-            if (files.Length == 0)
-                throw new ArgumentException("invalid files count", nameof(files));
+            if (fls.Length == 0)
+            {
+                var error = new ArgumentOutOfRangeException(nameof(fls), "invalid files count");
+                logger.Error(error, error.Message);
+                throw error;
+            }
+
+            var enumerable = fls.Select(item => item.ToOrmFile());
+            var newFolder = newFldr.ToOrmFolder();
+
+            var files = enumerable as Files[] ?? enumerable.ToArray();
+
 
             Folders oldFolder = files[0].Folder;
 
@@ -268,26 +354,114 @@ namespace DAL.Repositories
             context.Entry(newFolder).State = EntityState.Modified;
         }
 
-        public IEnumerable<Folders> GetNextLevelChildNodes(Folders folder)
+        public void ShareFolderTo(DalFolder fldr, params DalUser[] usrs)
         {
+            if (ReferenceEquals(fldr, null))
+            {
+                var error = new ArgumentNullException(nameof(fldr), "folder can't be null");
+                logger.Error(error, error.Message);
+                throw error;
+            }
+
+            if (usrs.Length == 0)
+            {
+                var error = new ArgumentOutOfRangeException(nameof(usrs), "invalid usrs count");
+                logger.Error(error, error.Message);
+                throw error;
+            }
+
+            var users = usrs.Select(item => item.ToOrmUser());
+            var folder = fldr.ToOrmFolder();
+           
+            foreach (Users user in users)
+            {
+                folder.UsersShared.Add(user);
+
+                user.FoldersShared.Add(folder);
+
+                context.Entry(user).State = EntityState.Modified;
+            }
+
+            context.Entry(folder).State = EntityState.Modified;
+
+        }
+
+        public void RemoveAccessToFolder(DalFolder fldr, params DalUser[] usrs)
+        {
+            if (ReferenceEquals(fldr, null))
+            {
+                var error = new ArgumentNullException(nameof(fldr), "folder can't be null");
+                logger.Error(error, error.Message);
+                throw error;
+            }
+
+            if (usrs.Length == 0)
+            {
+                var error = new ArgumentOutOfRangeException(nameof(usrs), "invalid usrs count");
+                logger.Error(error, error.Message);
+                throw error;
+            }
+
+            var users = usrs.Select(item => item.ToOrmUser());
+            var folder = fldr.ToOrmFolder();
+
+            foreach (Users user in users)
+            {
+                folder.UsersShared.Remove(user);
+
+                user.FoldersShared.Remove(folder);
+
+                context.Entry(user).State = EntityState.Modified;
+            }
+
+            context.Entry(folder).State = EntityState.Modified;
+        }
+
+        public IEnumerable<DalFolder> GetNextLevelChildNodes(DalFolder fldr)
+        {
+            if (ReferenceEquals(fldr, null))
+            {
+                var error = new ArgumentNullException(nameof(fldr), "folder can't be null");
+                logger.Error(error, error.Message);
+                throw error;
+            }
+
+            var folder = fldr.ToOrmFolder();
+
             return context.Set<Folders>().Where(a => (a.leftKey >= folder.leftKey) 
                                                     && (a.rightKey <= folder.rightKey) 
                                                     && (a.level == folder.level + 1)
                                                     && (a.ownerId == folder.ownerId))
-                                                    .OrderBy(a => a.leftKey);
+                                                    .OrderBy(a => a.leftKey).Select(item => item.ToDalFolder());
         }
 
-        public Folders GetPreviousLevelParentNode(Folders folder)
+        public DalFolder GetPreviousLevelParentNode(DalFolder fldr)
         {
+            if (ReferenceEquals(fldr, null))
+            {
+                var error = new ArgumentNullException(nameof(fldr), "folder can't be null");
+                logger.Error(error, error.Message);
+                throw error;
+            }
+
+            var folder = fldr.ToOrmFolder();
+
             return context.Set<Folders>().FirstOrDefault(a => (a.leftKey <= folder.leftKey)
                                                             && (a.rightKey >= folder.rightKey) 
                                                             && (a.level == folder.level - 1)
-                                                            && (a.ownerId == folder.ownerId));
+                                                            && (a.ownerId == folder.ownerId)).ToDalFolder();
         }
 
-        public IEnumerable<Folders> GetNeighboringNodes(Folders folder)
+        public IEnumerable<DalFolder> GetNeighboringNodes(DalFolder fldr)
         {
-            return GetNextLevelChildNodes(GetPreviousLevelParentNode(folder));
+            if (ReferenceEquals(fldr, null))
+            {
+                var error = new ArgumentNullException(nameof(fldr), "folder can't be null");
+                logger.Error(error, error.Message);
+                throw error;
+            }
+
+            return GetNextLevelChildNodes(GetPreviousLevelParentNode(fldr));
         }
         #endregion
 

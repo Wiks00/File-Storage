@@ -82,12 +82,12 @@
     <Compile Include="DTO\DtoRole.cs" />
     <Compile Include="DTO\DtoUser.cs" />
     <Compile Include="DTO\IEntity.cs" />
+    <Compile Include="BllMapper.cs" />
     <Compile Include="Interfaces\IFileService.cs" />
     <Compile Include="Interfaces\IFileTypeService.cs" />
     <Compile Include="Interfaces\IFolderService.cs" />
     <Compile Include="Interfaces\IRoleService.cs" />
     <Compile Include="Interfaces\IUserService.cs" />
-    <Compile Include="Mapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\FileService.cs" />
     <Compile Include="Services\FileTypeService.cs" />
@@ -99,10 +99,6 @@
     <ProjectReference Include="..\DAL\DAL.csproj">
       <Project>{68c0b2ed-acd8-41f7-af04-8e711cefa53a}</Project>
       <Name>DAL</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ORM\ORM.csproj">
-      <Project>{17c57bb0-0f14-45e7-8ff6-2713b5e08f1c}</Project>
-      <Name>ORM</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

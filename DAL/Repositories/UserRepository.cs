@@ -10,6 +10,7 @@ using DAL.DTO;
 using DAL.Interfaces;
 using Logger;
 using ORM;
+using static DAL.Mappers.DalMapper;
 
 namespace DAL.Repositories
 {
@@ -24,77 +25,117 @@ namespace DAL.Repositories
             this.logger = logger;
         }
 
-        public IEnumerable<Users> GetAll()
+        public IEnumerable<DalUser> GetAll()
         {
-            return context.Set<Users>();
+            return context.Set<Users>().Select(item => item.ToDalUser());
         }
 
-        public Users GetById(long key)
+        public DalUser GetById(long key)
         {
             if (key < 0)
-                throw new ArgumentOutOfRangeException(nameof(key), "parametr can't be negative");
+            {
+                var error = new ArgumentOutOfRangeException(nameof(key), "parametr can't be negative");
+                logger.Error(error, error.Message);
+                throw error;
+            }
 
-            return context.Set<Users>().FirstOrDefault(user => user.id == key);        
+            return context.Set<Users>().FirstOrDefault(user => user.id == key).ToDalUser();        
         }
 
-        public IEnumerable<Users> GetByPredicate(Func<Users, bool> func)
+        public IEnumerable<DalUser> GetByPredicate(Expression<Func<DalUser, bool>> func)
         {
             if (ReferenceEquals(func, null))
-                throw new ArgumentNullException(nameof(func), "parametr can't be null");
+            {
+                var error = new ArgumentNullException(nameof(func), "parametr can't be null");
+                logger.Error(error, error.Message);
+                throw error;
+            }
 
-            return context.Set<Users>().Where(func);        
+            return context.Set<Users>().Where(Convert<DalUser,Users>(func)).Select(item => item.ToDalUser());        
         }
 
-        public void Create(Users e)
+        public void Create(DalUser entity)
         {
-            if (ReferenceEquals(e, null))
-                throw new ArgumentNullException(nameof(e), "parametr can't be null");
+            if (ReferenceEquals(entity, null))
+            {
+                var error = new ArgumentNullException(nameof(entity), "parametr can't be null");
+                logger.Error(error, error.Message);
+                throw error;
+            }
 
-            context.Set<Users>().Add(e);              
+            context.Set<Users>().Add(entity.ToOrmUser());              
         }
 
-        public void Delete(Users e)
+        public void Delete(DalUser entity)
         {
-            if (ReferenceEquals(e, null))
-                throw new ArgumentNullException(nameof(e),"parametr can't be null");
+            if (ReferenceEquals(entity, null))
+            {
+                var error = new ArgumentNullException(nameof(entity),"parametr can't be null");
+                logger.Error(error, error.Message);
+                throw error;
+            }
 
-            var possibleUser = context.Set<Users>().Single(user => user.id == e.id);
+            var possibleUser = context.Set<Users>().Single(user => user.id == entity.ID);
 
             if (ReferenceEquals(possibleUser, null))
-                throw new ArgumentNullException(nameof(possibleUser), "didn't find equally User In database");
+            {
+                var error = new ArgumentNullException(nameof(possibleUser), "didn't find equally User In database");
+                logger.Error(error, error.Message);
+                throw error;
+            }
 
             context.Set<Users>().Remove(possibleUser); 
         }
 
-        public void Update(Users e)
+        public void Update(DalUser entity)
         {
-            if (ReferenceEquals(e, null))
-                throw new ArgumentNullException(nameof(e), "parametr can't be null");
+            if (ReferenceEquals(entity, null))
+            {
+                var error = new ArgumentNullException(nameof(entity), "parametr can't be null");
+                logger.Error(error, error.Message);
+                throw error;
+            }
 
-            var entity = context.Set<Users>().Find(e.id);
+            var user = context.Set<Users>().Find(entity.ID);
+            var e = entity.ToOrmUser();
 
-            entity.email = e.email;
-            entity.login = e.login;
-            entity.password = e.password;
+            user.email = e.email;
+            user.login = e.login;
+            user.password = e.password;
 
-            entity.Roles = e.Roles;
-            entity.Folders = e.Folders;
-            entity.FoldersShared = e.FoldersShared;
+            user.Roles = e.Roles;
+            user.Folders = e.Folders;
+            user.FoldersShared = e.FoldersShared;
 
             context.Entry(entity).State = EntityState.Modified;
         }
 
-        public void Update<TKey>(Func<Users, bool> func, Expression<Func<Users, TKey>> keyValue, TKey e)
+        public void Update<TKey>(Expression<Func<DalUser, bool>> func, Expression<Func<DalUser, TKey>> keyValue, TKey e)
         {
-            if (ReferenceEquals(func, null) || ReferenceEquals(func, null) || e.Equals(default(TKey)))
-                throw new ArgumentException("incorrect parametr(s) value");
+            if (ReferenceEquals(func, null) || ReferenceEquals(keyValue, null) || e.Equals(default(TKey)))
+            {
+                var error = new ArgumentException("incorrect parametr(s) value");
+                logger.Error(error, error.Message);
+                throw error;
+            }
 
             MemberExpression memberExpression = (MemberExpression)keyValue.Body;
-            string propName = memberExpression.Member.Name;
+            string propName;
+
+            if (memberExpression.Expression.GetType().ToString().Equals("System.Linq.Expressions.PropertyExpression"))
+            {
+                var param = (MemberExpression)memberExpression.Expression;
+
+                propName = GetEqualProperty(typeof(DalFile).ToString(), param.Member.Name + "." + memberExpression.Member.Name);
+            }
+            else
+            {
+                propName = GetEqualProperty(typeof(DalFile).ToString(), memberExpression.Member.Name);
+            }
 
             Type t = typeof(Users);
 
-            foreach (var entity in context.Set<Users>().Where(func))
+            foreach (var entity in context.Set<Users>().Where(Convert<DalUser,Users>(func)))
             {
                 MethodInfo method = t.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public).FirstOrDefault(mtd => mtd.Name.ToLower().Equals("set_" + propName));
                 method?.Invoke(entity, new object[] { e });

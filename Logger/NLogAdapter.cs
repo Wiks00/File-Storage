@@ -15,14 +15,9 @@ namespace Logger
             logger = LogManager.GetCurrentClassLogger();
         }
 
-        public void Error(string message)
+        public void Error(Exception error, string message)
         {
-            logger.Error(message);
-        }
-
-        public void Trace(string message)
-        {
-            logger.Trace(message);
+            logger.Error(error, message);
         }
 
         public void Info(string message)

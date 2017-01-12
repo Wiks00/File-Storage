@@ -85,6 +85,24 @@ namespace BLL.Interfaces
         void MoveFilesIntoAnotherFolder(DtoFolder folder, params DtoFile[] files);
 
         /// <summary>
+        /// Share folder to another Users
+        /// </summary>
+        /// <param name="folder">folder , that will be shared</param>
+        /// <param name="users">users which will be granted access</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        void ShareFolderToUsers(DtoFolder folder, params DtoUser[] users);
+
+        /// <summary>
+        /// Remove access to folder to selected users
+        /// </summary>
+        /// <param name="folder">for what folder will be removed access</param>
+        /// <param name="users">for which users</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        void RemoveAccessToFolderToUsers(DtoFolder folder, params DtoUser[] users);
+
+        /// <summary>
         /// Get child Folders of given Folder
         /// </summary>
         /// <param name="folder">investigated Folder</param>
