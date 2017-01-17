@@ -10,7 +10,7 @@ CREATE DATABASE Storage
 
 CREATE TABLE Folders (
 	id bigint PRIMARY KEY,
-	ownerId bigint NOT NULL UNIQUE,
+	ownerId bigint NOT NULL ,
 	name VARCHAR(1000) NOT NULL,
 	dateTime DATE NOT NULL,
 	level INT NOT NULL,
@@ -27,7 +27,7 @@ CREATE TABLE Users (
 
 CREATE TABLE Roles (
 	id bigint IDENTITY(1,1) PRIMARY KEY,
-	role VARCHAR(100) NOT NULL UNIQUE
+	role VARCHAR(100) NOT NULL
 );
 
 CREATE TABLE Files (
@@ -41,23 +41,26 @@ CREATE TABLE Files (
 
 CREATE TABLE FileTypes (
 	id bigint IDENTITY(1,1) PRIMARY KEY,
-	typeName VARCHAR(100) NOT NULL UNIQUE,
+	typeName VARCHAR(100) NOT NULL ,
 	format VARCHAR(1000) NOT NULL
 );
 
 CREATE TABLE Membership (
-	userId bigint NOT NULL,
-	roleId bigint NOT NULL
+	userId bigint NOT NULL ,
+	roleId bigint NOT NULL ,
+	constraint pk_Membership primary key(userId,roleId)
 );
 
 CREATE TABLE Association (
-	fileId bigint NOT NULL,
-	fileTypeId bigint NOT NULL
+	fileId bigint NOT NULL ,
+	fileTypeId bigint NOT NULL ,
+	constraint pk_Association primary key(fileId,fileTypeId)
 );
 
 CREATE TABLE Share (
-	userId bigint NOT NULL,
-	folderId bigint NOT NULL
+	userId bigint NOT NULL ,
+	folderId bigint NOT NULL ,
+	constraint pk_Share primary key(userId,folderId)
 );
 
 ALTER TABLE Folders ADD CONSTRAINT Folders_fk0 FOREIGN KEY (ownerID) REFERENCES Users(id);

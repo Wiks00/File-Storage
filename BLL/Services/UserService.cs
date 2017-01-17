@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Helpers;
 using BLL.DTO;
 using BLL.Interfaces;
 using BLL.Mappers;
+using DAL.DTO;
 using DAL.Interfaces;
+using static BLL.Mappers.BllMapper;
 
 namespace BLL.Services
 {
@@ -31,6 +34,11 @@ namespace BLL.Services
         public DtoUser GetUserById(long key)
         {
             return userRepository.GetById(key).ToDtoUser();
+        }
+
+        public IEnumerable<DtoUser> GetUserByPredicate(Expression<Func<DtoUser, bool>> func)
+        {      
+            return userRepository.GetByPredicate(Convert<DtoUser, DalUser>(func)).Select(item => item.ToDtoUser());
         }
 
         public void CreateUser(DtoUser e)
@@ -82,7 +90,7 @@ namespace BLL.Services
 
         public bool IsFreeLogin(string login)
         {
-            return !userRepository.GetByPredicate(user => user.Email == login).Any();
+            return !userRepository.GetByPredicate(user => user.Login == login).Any();
         }
     }
 }

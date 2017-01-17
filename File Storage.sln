@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DR", "DR\DR.csproj", "{8010
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Logger", "Logger\Logger.csproj", "{EC7087C7-F678-4377-9156-65E00C71C859}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebUI", "WebUI\WebUI.csproj", "{8F813FF2-ACBD-44CA-85F7-B4E9F1483C32}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{EC7087C7-F678-4377-9156-65E00C71C859}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EC7087C7-F678-4377-9156-65E00C71C859}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EC7087C7-F678-4377-9156-65E00C71C859}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8F813FF2-ACBD-44CA-85F7-B4E9F1483C32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8F813FF2-ACBD-44CA-85F7-B4E9F1483C32}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8F813FF2-ACBD-44CA-85F7-B4E9F1483C32}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8F813FF2-ACBD-44CA-85F7-B4E9F1483C32}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

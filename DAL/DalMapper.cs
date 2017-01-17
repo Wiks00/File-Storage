@@ -20,11 +20,10 @@ namespace DAL.Mappers
         /// </summary>
         /// <param name="file">orm entity</param>
         /// <returns>dal entity</returns>
-        /// <exception cref="ArgumentNullException"></exception>
         public static DalFile ToDalFile(this Files file)
         {
-            if(ReferenceEquals(file,null))
-                throw new ArgumentNullException(nameof(file),"file can't be null");
+            if (ReferenceEquals(file, null))
+                return null;
 
             return new DalFile
             {
@@ -42,11 +41,10 @@ namespace DAL.Mappers
         /// </summary>
         /// <param name="fileType">orm entity</param>
         /// <returns>dal entity</returns>
-        /// <exception cref="ArgumentNullException"></exception>
         public static DalFileType ToDalFileType(this FileTypes fileType)
         {
             if (ReferenceEquals(fileType, null))
-                throw new ArgumentNullException(nameof(fileType), "fileType can't be null");
+                return null;
 
             return new DalFileType
             {
@@ -61,11 +59,10 @@ namespace DAL.Mappers
         /// </summary>
         /// <param name="user">orm entity</param>
         /// <returns>dal entity</returns>
-        /// <exception cref="ArgumentNullException"></exception>
         public static DalUser ToDalUser(this Users user)
         {
             if (ReferenceEquals(user, null))
-                throw new ArgumentNullException(nameof(user), "user can't be null");
+                return null;
 
             return new DalUser
             {
@@ -84,11 +81,10 @@ namespace DAL.Mappers
         /// </summary>
         /// <param name="folder">orm entity</param>
         /// <returns>dal entity</returns>
-        /// <exception cref="ArgumentNullException"></exception>
         public static DalFolder ToDalFolder(this Folders folder)
         {
             if (ReferenceEquals(folder, null))
-                throw new ArgumentNullException(nameof(folder), "folder can't be null");
+                return null;
 
             return new DalFolder
             {
@@ -109,11 +105,10 @@ namespace DAL.Mappers
         /// </summary>
         /// <param name="role">orm entity</param>
         /// <returns>dal entity</returns>
-        /// <exception cref="ArgumentNullException"></exception>
         public static DalRole ToDalRole(this Roles role)
         {
             if (ReferenceEquals(role, null))
-                throw new ArgumentNullException(nameof(role), "role can't be null");
+                return null;
 
             return new DalRole
             {
@@ -130,11 +125,10 @@ namespace DAL.Mappers
         /// </summary>
         /// <param name="file">dal entity</param>
         /// <returns>orm entity</returns>
-        /// <exception cref="ArgumentNullException"></exception>
         public static Files ToOrmFile(this DalFile file)
         {
             if (ReferenceEquals(file, null))
-                throw new ArgumentNullException(nameof(file), "file can't be null");
+                return null;
 
             return new Files
             {
@@ -153,11 +147,10 @@ namespace DAL.Mappers
         /// </summary>
         /// <param name="fileType">dal entity</param>
         /// <returns>orm entity</returns>
-        /// <exception cref="ArgumentNullException"></exception>
         public static FileTypes ToOrmFileType(this DalFileType fileType)
         {
             if (ReferenceEquals(fileType, null))
-                throw new ArgumentNullException(nameof(fileType), "fileType can't be null");
+                return null;
 
             return new FileTypes
             {
@@ -172,11 +165,10 @@ namespace DAL.Mappers
         /// </summary>
         /// <param name="user">dal entity</param>
         /// <returns>orm entity</returns>
-        /// <exception cref="ArgumentNullException"></exception>
         public static Users ToOrmUser(this DalUser user)
         {
             if (ReferenceEquals(user, null))
-                throw new ArgumentNullException(nameof(user), "user can't be null");
+                return null;
 
             return new Users
             {
@@ -195,11 +187,10 @@ namespace DAL.Mappers
         /// </summary>
         /// <param name="folder">dal entity</param>
         /// <returns>orm entity</returns>
-        /// <exception cref="ArgumentNullException"></exception>
         public static Folders ToOrmFolder(this DalFolder folder)
         {
             if (ReferenceEquals(folder, null))
-                throw new ArgumentNullException(nameof(folder), "folder can't be null");
+                return null;
 
             return new Folders
             {
@@ -217,15 +208,14 @@ namespace DAL.Mappers
         }
 
         /// <summary>
-        /// Convert Dal Folder entity to Orm entity
+        /// Convert Dal Role entity to Orm entity
         /// </summary>
         /// <param name="role">dal entity</param>
         /// <returns>orm entity</returns>
-        /// <exception cref="ArgumentNullException"></exception>
         public static Roles ToOrmRole(this DalRole role)
         {
             if (ReferenceEquals(role, null))
-                throw new ArgumentNullException(nameof(role), "role can't be null");
+                return null;
 
             return new Roles
             {
@@ -268,7 +258,7 @@ namespace DAL.Mappers
             switch (type.ToLower())
             {
                 #region user
-                case "daluser":
+                case "dal.dto.daluser":
                     switch (property.ToLower())
                     {
                         case "id":
@@ -290,7 +280,7 @@ namespace DAL.Mappers
                 #endregion
 
                 #region role
-                case "dalrole":
+                case "dal.dto.dalrole":
                     switch (property.ToLower())
                     {
                         case "id":
@@ -302,7 +292,7 @@ namespace DAL.Mappers
                 #endregion
 
                 #region folder
-                case "dalfolder":
+                case "dal.dto.dalfolder":
                     switch (property.ToLower())
                     {
                         case "id":
@@ -330,7 +320,7 @@ namespace DAL.Mappers
                 #endregion
 
                 #region file
-                case "dalfile":
+                case "dal.dto.dalfile":
                     switch (property.ToLower())
                     {
                         case "id":
@@ -353,7 +343,7 @@ namespace DAL.Mappers
                 #endregion
 
                 #region file type
-                case "dalfiletype":
+                case "dal.dto.dalfiletype":
                     switch (property.ToLower())
                     {
                         case "id":
@@ -374,18 +364,18 @@ namespace DAL.Mappers
 
     internal class ParameterTypeVisitor<TSource, TTarget> : ExpressionVisitor
     {
-        private ReadOnlyCollection<ParameterExpression> _parameters;
+        private ReadOnlyCollection<ParameterExpression> parameters;
 
         protected override Expression VisitParameter(ParameterExpression node)
         {
-            return _parameters?.FirstOrDefault(p => p.Name == node.Name) ??
+            return parameters?.FirstOrDefault(p => p.Name == node.Name) ??
                 (node.Type == typeof(TSource) ? Expression.Parameter(typeof(TTarget), node.Name) : node);
         }
 
         protected override Expression VisitLambda<T>(Expression<T> node)
         {
-            _parameters = VisitAndConvert(node.Parameters, "VisitLambda");
-            return Expression.Lambda(Visit(node.Body), _parameters);
+            parameters = VisitAndConvert(node.Parameters, "VisitLambda");
+            return Expression.Lambda(Visit(node.Body), parameters);
         }
 
         protected override Expression VisitMember(MemberExpression node)

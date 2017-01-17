@@ -5,15 +5,7 @@ namespace Logger
 {
     public class NLogAdapter : ILogAdapter
     {
-        private readonly NLog.Logger logger;
-        private static readonly Lazy<NLogAdapter> adapter = new Lazy<NLogAdapter>(() => new NLogAdapter());
-
-        public static NLogAdapter Logger => adapter.Value;
-
-        private NLogAdapter()
-        {
-            logger = LogManager.GetCurrentClassLogger();
-        }
+        private static readonly NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
         public void Error(Exception error, string message)
         {

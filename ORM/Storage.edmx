@@ -5,8 +5,6 @@
     <!-- SSDL content -->
     <edmx:StorageModels>
       <Schema Namespace="Хранилище StorageModel" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
-        <!--Ошибки, обнаруженные при создании:
-предупреждение 6002: В таблице или представлении "Storage.dbo.Association" не определен первичный ключ. Ключ был выведен, а определение таблицы или представления было создано в режиме только для чтения.-->
         <EntityType Name="Association">
           <Key>
             <PropertyRef Name="fileId" />
@@ -46,8 +44,6 @@
           <Property Name="leftKey" Type="int" Nullable="false" />
           <Property Name="rightKey" Type="int" Nullable="false" />
         </EntityType>
-        <!--Ошибки, обнаруженные при создании:
-предупреждение 6002: В таблице или представлении "Storage.dbo.Membership" не определен первичный ключ. Ключ был выведен, а определение таблицы или представления было создано в режиме только для чтения.-->
         <EntityType Name="Membership">
           <Key>
             <PropertyRef Name="userId" />
@@ -63,8 +59,6 @@
           <Property Name="id" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="role" Type="varchar" MaxLength="100" Nullable="false" />
         </EntityType>
-        <!--Ошибки, обнаруженные при создании:
-предупреждение 6002: В таблице или представлении "Storage.dbo.Share" не определен первичный ключ. Ключ был выведен, а определение таблицы или представления было создано в режиме только для чтения.-->
         <EntityType Name="Share">
           <Key>
             <PropertyRef Name="userId" />
@@ -179,29 +173,14 @@
           </ReferentialConstraint>
         </Association>
         <EntityContainer Name="Хранилище StorageModelContainer">
+          <EntitySet Name="Association" EntityType="Self.Association" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Files" EntityType="Self.Files" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="FileTypes" EntityType="Self.FileTypes" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Folders" EntityType="Self.Folders" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Membership" EntityType="Self.Membership" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Roles" EntityType="Self.Roles" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Share" EntityType="Self.Share" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Users" EntityType="Self.Users" Schema="dbo" store:Type="Tables" />
-          <EntitySet Name="Association" EntityType="Self.Association" store:Type="Tables" store:Schema="dbo">
-            <DefiningQuery>SELECT 
-    [Association].[fileId] AS [fileId], 
-    [Association].[fileTypeId] AS [fileTypeId]
-    FROM [dbo].[Association] AS [Association]</DefiningQuery>
-          </EntitySet>
-          <EntitySet Name="Membership" EntityType="Self.Membership" store:Type="Tables" store:Schema="dbo">
-            <DefiningQuery>SELECT 
-    [Membership].[userId] AS [userId], 
-    [Membership].[roleId] AS [roleId]
-    FROM [dbo].[Membership] AS [Membership]</DefiningQuery>
-          </EntitySet>
-          <EntitySet Name="Share" EntityType="Self.Share" store:Type="Tables" store:Schema="dbo">
-            <DefiningQuery>SELECT 
-    [Share].[userId] AS [userId], 
-    [Share].[folderId] AS [folderId]
-    FROM [dbo].[Share] AS [Share]</DefiningQuery>
-          </EntitySet>
           <AssociationSet Name="Association_fk0" Association="Self.Association_fk0">
             <End Role="Files" EntitySet="Files" />
             <End Role="Association" EntitySet="Association" />

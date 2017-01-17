@@ -27,10 +27,10 @@ namespace BLL.Services
             return roleRepository.GetAll().Select(item => item.ToDtoRole());
         }
 
-        public DtoRole GetRolesByTitle(string title)
+        public DtoRole GetRoleByTitle(string title)
         {
             return
-                roleRepository.GetByPredicate(role => role.Role.ToLower().Contains(title.ToLower()))
+                roleRepository.GetByPredicate(role => role.Role.ToLower().Equals(title.ToLower()))
                     .FirstOrDefault()
                     .ToDtoRole();
         }

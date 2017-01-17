@@ -20,8 +20,8 @@ namespace BLL.Interfaces
         /// Get Role by title
         /// </summary>
         /// <param name="func">title of the search Roles</param>
-        /// <returns>Roles enumeration</returns>
-        DtoRole GetRolesByTitle(string title);
+        /// <returns>Role</returns>
+        DtoRole GetRoleByTitle(string title);
 
         /// <summary>
         /// Create new Role

@@ -1,10 +1,9 @@
 ﻿using System.Data.Entity;
 using BLL.Interfaces;
 using BLL.Services;
-using BookLogic;
 using DAL.Interfaces;
 using DAL.Repositories;
-using LogLogic;
+using Logger;
 using Ninject;
 using Ninject.Web.Common;
 using ORM;
@@ -12,9 +11,9 @@ using ORM;
 
 namespace DR
 {
-    public static class ResolverConfig
+    public static class ResolverModule
     {
-        public static void ConfigurateResolverWeb(this IKernel kernel)
+        public static void ConfigurateResolver(this IKernel kernel)
         {
             kernel.Bind<IUnitOfWork>().To<UnitOfWork>().InRequestScope();
             kernel.Bind<DbContext>().To<StorageEntities>().InRequestScope();

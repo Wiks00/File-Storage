@@ -25,6 +25,13 @@ namespace BLL.Interfaces
         DtoUser GetUserById(long key);
 
         /// <summary>
+        /// Get user by delegate
+        /// </summary>
+        /// <param name="func">search delegate</param>
+        /// <returns>User enumeration</returns>
+        IEnumerable<DtoUser> GetUserByPredicate(Expression<Func<DtoUser, bool>> func);
+
+        /// <summary>
         /// Create new User
         /// </summary>
         /// <param name="e">inserting User</param>
