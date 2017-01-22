@@ -29,8 +29,9 @@ namespace DAL.Interfaces
         /// </summary>
         /// <param name="prnt">in what folder should be created</param>
         /// <param name="newFolderName">new folder title</param>
+        /// <returns>new folder</returns>
         /// <exception cref="ArgumentNullException"></exception>
-        void Add(DalFolder prnt, string newFolderName);
+        DalFolder Add(DalFolder prnt, string newFolderName);
 
         /// <summary>
         /// Insert new files in the folder

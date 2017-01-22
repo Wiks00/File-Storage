@@ -7,7 +7,9 @@ using System.Threading.Tasks;
 using BLL.DTO;
 using BLL.Interfaces;
 using BLL.Mappers;
+using DAL.DTO;
 using DAL.Interfaces;
+using static BLL.Mappers.BllMapper;
 
 namespace BLL.Services
 {
@@ -35,6 +37,11 @@ namespace BLL.Services
         {
             return folderRepository.GetByPredicate(folder => folder.Title.ToLower().Contains(title.ToLower()))
                     .Select(item => item.ToDtoFolder());
+        }
+
+        public IEnumerable<DtoFolder> GetFoldersByPredicate(Expression<Func<DtoFolder, bool>> func)
+        {
+            return folderRepository.GetByPredicate(Convert<DtoFolder, DalFolder>(func)).Select(item => item.ToDtoFolder());
         }
 
         public void CreateRootFolder(long userID)
@@ -68,10 +75,12 @@ namespace BLL.Services
             uow.Commit();
         }
 
-        public void AddFolder(DtoFolder parent, string newFolderName)
+        public DtoFolder AddFolder(DtoFolder parent, string newFolderName)
         {
-            folderRepository.Add(parent.ToDalFolder(), newFolderName);
+            var  folder = folderRepository.Add(parent.ToDalFolder(), newFolderName);
             uow.Commit();
+
+            return folder.ToDtoFolder();
         }
 
         public void InsertFilesIntoFolder(DtoFolder folder, params DtoFile[] files)

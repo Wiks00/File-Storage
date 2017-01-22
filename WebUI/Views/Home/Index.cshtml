@@ -1,32 +1,169 @@
-﻿@{
-    ViewBag.Title = "Home Page";
-    Layout = "~/Views/Shared/_Layout.cshtml";
-}
+﻿@model WebUI.Models.FolderViewModel
 
-<div class="jumbotron">
-    <h1>ASP.NET</h1>
-    <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
-    <p><a href="http://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
-</div>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>File manager</title>
+    <script src="~/FileExplorer/dhtmlx.js"></script>
+    @Scripts.Render("~/bundles/jquery")
+    <link rel="stylesheet" type="text/css" href="~/FileExplorer/dhtmlx.css">
+    <style>
+        html, body {
+            width: 100%; /*provides the correct work of a full-screen layout*/
+            height: 100%; /*provides the correct work of a full-screen layout*/
+            overflow: hidden; /*hides the default body's space*/
+            margin: 0px; /*hides the body's scrolls*/
+        }
+    </style>
+</head>
+<body>
+<script type="text/javascript">
+    var GlobalTree;
+    var GlobalToolbar;
+    dhtmlxEvent(window,
+        "load",
+        function() {
 
-<div class="row">
-    <div class="col-md-4">
-        <h2>Getting started</h2>
-        <p>
-            ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites that
-            enables a clean separation of concerns and gives you full control over markup
-            for enjoyable, agile development.
-        </p>
-        <p><a class="btn btn-default" href="http://go.microsoft.com/fwlink/?LinkId=301865">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Get more libraries</h2>
-        <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-        <p><a class="btn btn-default" href="http://go.microsoft.com/fwlink/?LinkId=301866">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Web Hosting</h2>
-        <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-        <p><a class="btn btn-default" href="http://go.microsoft.com/fwlink/?LinkId=301867">Learn more &raquo;</a></p>
-    </div>
-</div>
+            var myLayout = new dhtmlXLayoutObject(document.body, "2U");
+            myLayout.cells("a").setWidth(250);
+            myLayout.cells("a").setText("Files");
+            myLayout.cells("b").hideHeader();
+
+            var myGrid = myLayout.cells("b").attachGrid();
+            myGrid.setImagePath("@Url.Content("~/Content/icons/")"); //sets the path to the source images
+            myGrid.setIconsPath("@Url.Content("~/Content/imgs/")"); //sets the path to custom images
+            myGrid.setHeader("&nbsp;,Name,Type,Modified,id"); //sets the header labels
+            myGrid.setColTypes("img,ro,ro,ro,ro"); //sets the types of columns
+            myGrid.setInitWidths("70,250,100,*,0"); //sets the initial widths of columns
+            myGrid.setColAlign("center,left,left,left"); //sets the horizontal alignment
+            myGrid.init();
+
+            var myTree = myLayout.cells("a").attachTree();
+            myTree.setImagePath("@Url.Content("~/Content/imgs/")");
+            myTree.enableTreeLines(true);
+            myTree.enableCheckBoxes(1);
+            myTree.enableThreeStateCheckboxes(true);
+            myTree.enableItemEditor(true);
+
+            myTree.attachEvent("onSelect",
+                function(id) { //id -the id of the selected item
+                    myGrid.filterBy(4, id);
+                    return true;
+                });
+
+            var myToolbar = myLayout.attachToolbar();
+            myToolbar.setIconsPath("@Url.Content("~/Content/icons/")");
+            myToolbar.addText("user", 8, "Welcome back, @HttpContext.Current.User.Identity.Name !");
+            myToolbar.loadStruct("@Url.Content("~/Content/toolbarStruct.xml")");
+
+            GlobalTree = myTree;
+            GlobalToolbar = myToolbar;
+
+            myTree.attachEvent("onSelect",
+                function(id) {
+                    myGrid.filterBy(4, id);
+                    return true;
+                });
+
+            var oldTitle;
+
+            myTree.attachEvent("onEdit", function (state, id, tree, value) {                
+                if (state === 0)
+                    oldTitle = value;
+                if (state === 2) {
+                    $.ajax({
+                        url: '@Url.Action("EditFolder", "Home")',
+                        type: "POST",
+                        dataType: "json",
+                        data: { title: value, id: id },
+                        success: function () {
+                            if (dhtmlx.message)
+                                dhtmlx.message("Folder '" + oldTitle + "' successfully update on '" + value + "'");
+                            myTree.setItemText(id, value);
+                        },
+                        error: function () {
+                            if (dhtmlx.message)
+                                dhtmlx.message("Error while updating folder");
+                        }
+                    });
+                }
+            });
+
+            myGrid.attachEvent("onRowSelect",
+                function(id) {
+                    var text = myTree.getItemText(id);
+                    myTree.selectItem("id");
+                });
+
+
+            var json = JSON.parse(@Html.Raw(Json.Encode(Model.FolderStructJson)));
+
+            myTree.parse(json ,"json");
+            myGrid.load("@Url.Content("~/Content/gridData.xml")",
+                function() {
+                    myTree.selectItem("books");
+                });
+
+        });
+
+    function addFolder() {
+        var id = GlobalTree.getSelectedItemId();
+        var title = GlobalToolbar.getValue("input");
+
+        $.ajax({
+            url: '@Url.Action("AddFolder", "Home")',
+            type: "POST",
+            dataType: "json",
+            data: { title: title, id: id },
+            success: function (mydata) {
+                if (dhtmlx.message)
+                    dhtmlx.message("Folder '" + title + "' successfully update");
+                if(id !== "")
+                    GlobalTree.insertNewChild(mydata.parentId, mydata.id, mydata.title);
+                else {
+                    GlobalTree.deleteChildItems(mydata.parentId);
+                    GlobalTree.parse(JSON.parse(mydata.data), "json");
+                }
+            },
+            error: function () {
+                if (dhtmlx.message)
+                    dhtmlx.message("Error while updating new folder");
+            }
+        });
+    }
+
+    function deleteFolder() {
+        var id = GlobalTree.getSelectedItemId();
+        var title = GlobalTree.getItemText(id);
+
+        $.ajax({
+            url: '@Url.Action("DeleteFolder", "Home")',
+            type: "POST",
+            dataType: "json",
+            data: { id: id },
+            success: function () {
+                if (dhtmlx.message)
+                    dhtmlx.message("Folder '" + title + "' successfully delete");
+                GlobalTree.deleteItem(id,false);
+            },
+            error: function () {
+                if (dhtmlx.message)
+                    dhtmlx.message("Error while deleting new folder");
+            }
+        });
+    }
+
+    function logout() {
+        $.ajax({
+            url: '@Url.Action("LogOut","Account")',
+            success: function (data) {
+                window.location.href = data;
+            },
+            error: function () {
+                alert("err");
+            }
+        });
+    }
+</script>
+</body>
+</html>

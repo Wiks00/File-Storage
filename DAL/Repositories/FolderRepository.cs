@@ -43,7 +43,7 @@ namespace DAL.Repositories
                 throw error;
             }
 
-            return context.Set<Folders>().FirstOrDefault(user => user.id == key).ToDalFolder();
+            return context.Set<Folders>().FirstOrDefault(folder => folder.id == key).ToDalFolder();
         }
 
         public IEnumerable<DalFolder> GetByPredicate(Expression<Func<DalFolder, bool>> func)
@@ -74,7 +74,7 @@ namespace DAL.Repositories
 
             var e = entity.ToOrmFolder();
 
-            var possibleFolder = context.Set<Folders>().Single(user => user.id == e.id);
+            var possibleFolder = context.Set<Folders>().Single(folder => folder.id == e.id);
 
             if (ReferenceEquals(possibleFolder, null))
                 throw new ArgumentNullException(nameof(possibleFolder), "didn't find equally Folder In database");
@@ -83,7 +83,7 @@ namespace DAL.Repositories
 
             context.Set<Folders>().RemoveRange(context.Set<Folders>().Where(a => (a.leftKey >= possibleFolder.leftKey)
                                                                   && (a.rightKey <= possibleFolder.rightKey)
-                                                                  && (a.ownerId == possibleFolder.ownerId)));
+                                                                  && (a.ownerId == possibleFolder.ownerId)).AsEnumerable());
 
             int range = possibleFolder.rightKey - possibleFolder.leftKey + 1;
 
@@ -98,13 +98,13 @@ namespace DAL.Repositories
                 context.Entry(item).State = EntityState.Modified;
             }
 
-            foreach (Folders item in context.Set<Folders>().Where(a => a.ownerId == possibleFolder.ownerId))
+            /*foreach (Folders item in context.Set<Folders>().Where(a => a.ownerId == possibleFolder.ownerId))
             {
                 item.id = id;
                 id++;
 
                 context.Entry(item).State = EntityState.Modified;
-            }
+            }*/
         }
 
         public void Update(DalFolder entity)
@@ -118,7 +118,7 @@ namespace DAL.Repositories
 
             var e = entity.ToOrmFolder();
 
-            if (ReferenceEquals(e.User, null) && e.ownerId.Equals(0))
+            if (e.ownerId.Equals(0))
             {
                 var error = new ArgumentException("incorrect Folder object");
                 logger.Error(error, error.Message);
@@ -144,7 +144,7 @@ namespace DAL.Repositories
 
         public void Update<TKey>(Expression<Func<DalFolder, bool>> func, Expression<Func<DalFolder, TKey>> keyValue, TKey e)
         {
-            if (ReferenceEquals(func, null) || ReferenceEquals(keyValue, null) || e.Equals(default(TKey)))
+            if (ReferenceEquals(func, null) || ReferenceEquals(keyValue, null) || Equals(e,default(TKey)))
             {
                 var error = new ArgumentException("incorrect parametr(s) value");
                 logger.Error(error, error.Message);
@@ -214,7 +214,7 @@ namespace DAL.Repositories
                 leftKey = 1,
                 rightKey = 2,
                 Files = new HashSet<Files>(),
-                User = user,
+                User = null,
                 UsersShared = new HashSet<Users>()
             });
         }
@@ -224,7 +224,7 @@ namespace DAL.Repositories
             throw new NotImplementedException();
         }
 
-        public void Add(DalFolder prnt, string newFolderName)
+        public DalFolder Add(DalFolder prnt, string newFolderName)
         {       
             if(ReferenceEquals(prnt, null))
             {
@@ -263,7 +263,7 @@ namespace DAL.Repositories
                 context.Entry(item).State = EntityState.Modified;
             }
 
-            Create(new Folders
+            var folder = new Folders
             {
                 ownerId = parent.ownerId,
                 name = newFolderName,
@@ -272,9 +272,13 @@ namespace DAL.Repositories
                 leftKey = leftKey,
                 rightKey = rightKey,
                 Files = new HashSet<Files>(),
-                User = context.Set<Users>().FirstOrDefault(user => user.id == parent.ownerId),
+                User = null,
                 UsersShared = new HashSet<Users>()
-            });
+            };
+
+            Create(folder);
+
+            return folder.ToDalFolder();
         }
 
         public void InsertFiles(DalFolder fldr, params DalFile[] fls)
@@ -431,8 +435,7 @@ namespace DAL.Repositories
             return context.Set<Folders>().Where(a => (a.leftKey >= folder.leftKey) 
                                                     && (a.rightKey <= folder.rightKey) 
                                                     && (a.level == folder.level + 1)
-                                                    && (a.ownerId == folder.ownerId))
-                                                    .OrderBy(a => a.leftKey).Select(item => item.ToDalFolder());
+                                                    && (a.ownerId == folder.ownerId)).AsEnumerable().Select(item => item.ToDalFolder());
         }
 
         public DalFolder GetPreviousLevelParentNode(DalFolder fldr)
@@ -484,7 +487,7 @@ namespace DAL.Repositories
             if (ReferenceEquals(e, null))
                 throw new ArgumentNullException(nameof(e), "parametr can't be null");
 
-            if (ReferenceEquals(e.User, null) && e.ownerId.Equals(0))
+            if (e.ownerId.Equals(0))
                 throw new ArgumentException("incorrect Folder object");
 
             long id = GetMaxId();

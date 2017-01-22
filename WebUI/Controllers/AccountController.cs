@@ -68,6 +68,12 @@ namespace WebUI.Controllers
         public ActionResult LogOut()
         {
             FormsAuthentication.SignOut();
+
+            if (Request.IsAjaxRequest())
+            {
+                return Json(Url.Action("Login", "Account"),JsonRequestBehavior.AllowGet);
+            }
+
             return RedirectToAction("LogIn", "Account");
         }
 

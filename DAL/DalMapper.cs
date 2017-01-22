@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Data.Entity.Core.Metadata.Edm;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -94,9 +95,9 @@ namespace DAL.Mappers
                 Level = folder.level,
                 DateTime = folder.dateTime,
                 Title = folder.name,
-                Owner = folder.User.ToDalUser(),
+                OwnerID = folder.ownerId,
                 Files = new HashSet<DalFile>(folder.Files.Select(item => item.ToDalFile())),
-                SharedToUsers = new HashSet<DalUser>(folder.UsersShared.Select(item => item.ToDalUser()))
+                SharedToUsers = new HashSet<long>(folder.UsersShared.Select(item => item.id))
             };
         }
 
@@ -200,10 +201,10 @@ namespace DAL.Mappers
                 level = folder.Level,
                 dateTime = folder.DateTime,
                 name = folder.Title,
-                ownerId = folder.Owner.ID,
-                User = folder.Owner.ToOrmUser(),
+                ownerId = folder.OwnerID,
+                User = null,
                 Files = new HashSet<Files>(folder.Files.Select(item => item.ToOrmFile())),
-                UsersShared = new HashSet<Users>(folder.SharedToUsers.Select(item => item.ToOrmUser()))
+                UsersShared = new HashSet<Users>(folder.SharedToUsers.Select(item => new Users{ id = item }))
             };
         }
 
@@ -307,7 +308,7 @@ namespace DAL.Mappers
                             return "datetime";
                         case "title":
                             return "name";
-                        case "owner.id":
+                        case "ownerid":
                             return "ownerid";
                         case "owner":
                             return "user";

@@ -18,6 +18,8 @@ namespace WebUI.Providers
             => (IUserService)dependencyResolver.GetService(typeof(IUserService));
         private IRoleService roleService
             => (IRoleService)dependencyResolver.GetService(typeof(IRoleService));
+        private IFolderService folderService
+            => (IFolderService)dependencyResolver.GetService(typeof(IFolderService));
 
         public bool CreateUser(string name, string email, string password)
         {
@@ -36,6 +38,11 @@ namespace WebUI.Providers
             }
 
             userService.CreateUser(user);
+
+            DtoUser createdUser = userService.GetUserByPredicate(usr => usr.Email.Equals(email, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+
+            if (!ReferenceEquals(createdUser, null))
+                folderService.CreateRootFolder(createdUser.ID);
 
             return true;
         }

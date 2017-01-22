@@ -11,17 +11,17 @@ namespace BLL.DTO
         public DtoFolder()
         {
             Files = new HashSet<DtoFile>();
-            SharedToUsers = new HashSet<DtoUser>();
+            SharedToUsers = new HashSet<long>();
         }
 
         public long ID { get; set; }
-        public DtoUser Owner { get; set; }
+        public long OwnerID { get; set; }
         public string Title { get; set; }
         public DateTime DateTime { get; set; }
         public int Level { get; set; }
         public int LeftKey { get; set; }
         public int RightKey { get; set; }
         public ICollection<DtoFile> Files { get; set; }
-        public ICollection<DtoUser> SharedToUsers { get; set; }
+        public ICollection<long> SharedToUsers { get; set; }
     }
 }

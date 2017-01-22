@@ -92,9 +92,9 @@ namespace BLL.Mappers
                 Level = folder.Level,
                 DateTime = folder.DateTime,
                 Title = folder.Title,
-                Owner = folder.Owner.ToDtoUser(),
+                OwnerID = folder.OwnerID,
                 Files = new HashSet<DtoFile>(folder.Files.Select(item => item.ToDtoFile())),
-                SharedToUsers = new HashSet<DtoUser>(folder.SharedToUsers.Select(item => item.ToDtoUser()))
+                SharedToUsers = new HashSet<long>(folder.SharedToUsers)
             };
         }
 
@@ -197,9 +197,9 @@ namespace BLL.Mappers
                 Level = folder.Level,
                 DateTime = folder.DateTime,
                 Title = folder.Title,
-                Owner = folder.Owner.ToDalUser(),
+                OwnerID = folder.OwnerID,
                 Files = new HashSet<DalFile>(folder.Files.Select(item => item.ToDalFile())),
-                SharedToUsers = new HashSet<DalUser>(folder.SharedToUsers.Select(item => item.ToDalUser()))
+                SharedToUsers = new HashSet<long>(folder.SharedToUsers)
             };
         }
 

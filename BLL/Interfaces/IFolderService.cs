@@ -31,6 +31,13 @@ namespace BLL.Interfaces
         IEnumerable<DtoFolder> GetFoldersContainsTitle(string title);
 
         /// <summary>
+        /// Get folders by delegate
+        /// </summary>
+        /// <param name="func">search delegate</param>
+        /// <returns>Folders enumeration</returns>
+        IEnumerable<DtoFolder> GetFoldersByPredicate(Expression<Func<DtoFolder, bool>> func);
+
+        /// <summary>
         /// Create new root Folder for the User
         /// </summary>
         /// <param name="userID">ID of the User</param>
@@ -67,7 +74,8 @@ namespace BLL.Interfaces
         /// </summary>
         /// <param name="parent">in what Folder should be created</param>
         /// <param name="newFolderName">new Folder title</param>
-        void AddFolder(DtoFolder parent, string newFolderName);
+        /// <returns>new Folder</returns>
+        DtoFolder AddFolder(DtoFolder parent, string newFolderName);
 
         /// <summary>
         /// Insert new files in the Folder
