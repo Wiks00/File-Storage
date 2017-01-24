@@ -24,10 +24,18 @@ namespace BLL.Interfaces
         DtoFileType GetFileTypeById(long key);
 
         /// <summary>
+        /// Get FileTypes by delegate
+        /// </summary>
+        /// <param name="func">search delegate</param>
+        /// <returns>FileTypes enumeration</returns>
+        IEnumerable<DtoFileType> GetFileTypesByPredicate(Expression<Func<DtoFileType, bool>> func);
+
+        /// <summary>
         /// Create new FileType
         /// </summary>
         /// <param name="e">inserting FileType</param>
-        void CreateFileType(DtoFileType e);
+        /// <returns>new FileType</returns>
+        DtoFileType CreateFileType(DtoFileType e);
 
         /// <summary>
         /// Delete FileType

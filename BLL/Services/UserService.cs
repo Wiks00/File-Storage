@@ -26,25 +26,21 @@ namespace BLL.Services
             userRepository = repository;
         }
 
-        public IEnumerable<DtoUser> GetAllUsers()
-        {
-            return userRepository.GetAll().Select(item => item.ToDtoUser());
-        }
+        public IEnumerable<DtoUser> GetAllUsers() 
+            => userRepository.GetAll().Select(item => item.ToDtoUser());
 
-        public DtoUser GetUserById(long key)
-        {
-            return userRepository.GetById(key).ToDtoUser();
-        }
+        public DtoUser GetUserById(long key) 
+            => userRepository.GetById(key).ToDtoUser();
 
-        public IEnumerable<DtoUser> GetUserByPredicate(Expression<Func<DtoUser, bool>> func)
-        {      
-            return userRepository.GetByPredicate(Convert<DtoUser, DalUser>(func)).Select(item => item.ToDtoUser());
-        }
+        public IEnumerable<DtoUser> GetUserByPredicate(Expression<Func<DtoUser, bool>> func) 
+            => userRepository.GetByPredicate(Convert<DtoUser, DalUser>(func)).Select(item => item.ToDtoUser());
 
-        public void CreateUser(DtoUser e)
+        public DtoUser CreateUser(DtoUser e)
         {
-            userRepository.Create(e.ToDalUser());
+            var user = userRepository.Create(e.ToDalUser());
             uow.Commit();
+
+            return user.ToDtoUser();
         }
 
         public void DeleteUser(DtoUser e)
@@ -83,14 +79,10 @@ namespace BLL.Services
             uow.Commit();
         }
 
-        public bool IsFreeEmail(string email)
-        {
-            return !userRepository.GetByPredicate(user => user.Email == email).Any();
-        }
+        public bool IsFreeEmail(string email) 
+            => !userRepository.GetByPredicate(user => user.Email == email).Any();
 
-        public bool IsFreeLogin(string login)
-        {
-            return !userRepository.GetByPredicate(user => user.Login == login).Any();
-        }
+        public bool IsFreeLogin(string login) 
+            => !userRepository.GetByPredicate(user => user.Login == login).Any();
     }
 }

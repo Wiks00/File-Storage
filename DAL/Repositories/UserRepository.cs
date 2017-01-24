@@ -26,9 +26,7 @@ namespace DAL.Repositories
         }
 
         public IEnumerable<DalUser> GetAll()
-        {
-            return context.Set<Users>().Select(item => item.ToDalUser());
-        }
+            => context.Set<Users>().Select(item => item.ToDalUser());
 
         public DalUser GetById(long key)
         {
@@ -54,7 +52,7 @@ namespace DAL.Repositories
             return context.Set<Users>().Where(Convert<DalUser,Users>(func)).Select(item => item.ToDalUser());        
         }
 
-        public void Create(DalUser entity)
+        public DalUser Create(DalUser entity)
         {
             if (ReferenceEquals(entity, null))
             {
@@ -63,7 +61,9 @@ namespace DAL.Repositories
                 throw error;
             }
 
-            context.Set<Users>().Add(entity.ToOrmUser());              
+            var user = context.Set<Users>().Add(entity.ToOrmUser());
+
+            return user.ToDalUser();
         }
 
         public void Delete(DalUser entity)

@@ -18,7 +18,7 @@
             <PropertyRef Name="id" />
           </Key>
           <Property Name="id" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="idFile" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="idFile" Type="uniqueidentifier" Nullable="false" StoreGeneratedPattern="Identity" />
           <Property Name="content" Type="varbinary(max)" />
           <Property Name="folderId" Type="bigint" Nullable="false" />
           <Property Name="dateTime" Type="date" Nullable="false" />
@@ -224,7 +224,7 @@
             <PropertyRef Name="id" />
           </Key>
           <Property Name="id" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="idFile" Type="Guid" Nullable="false" />
+          <Property Name="idFile" Type="Guid" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="content" Type="Binary" MaxLength="Max" FixedLength="false" />
           <Property Name="folderId" Type="Int64" Nullable="false" />
           <Property Name="dateTime" Type="DateTime" Nullable="false" Precision="0" />

@@ -70,12 +70,20 @@ namespace DAL.Interfaces
         void RemoveAccessToFolder(DalFolder fldr, params DalUser[] usrs);
 
         /// <summary>
-        /// Get child folders of given folder
+        /// Get next level child folders of given folder
         /// </summary>
         /// <param name="fldr">investigated folder</param>
         /// <returns>child folder enumeration</returns>
         /// <exception cref="ArgumentNullException"></exception>
         IEnumerable<DalFolder> GetNextLevelChildNodes(DalFolder fldr);
+
+        /// <summary>
+        /// Get all child folders of given folder
+        /// </summary>
+        /// <param name="fldr">investigated folder</param>
+        /// <returns>child folder enumeration</returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        IEnumerable<DalFolder> GetChildNodes(DalFolder fldr);
 
         /// <summary>
         /// Get parent folder of given folder

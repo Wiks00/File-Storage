@@ -30,9 +30,7 @@ namespace DAL.Repositories
         #region iRepository   
 
         public IEnumerable<DalFolder> GetAll()
-        {
-            return context.Set<Folders>().Select(item => item.ToDalFolder());
-        }
+            => context.Set<Folders>().Select(item => item.ToDalFolder());
 
         public DalFolder GetById(long key)
         {
@@ -58,10 +56,9 @@ namespace DAL.Repositories
             return context.Set<Folders>().Where(Convert<DalFolder,Folders>(func)).Select(item => item.ToDalFolder());
         }
 
-        void IRepository<DalFolder>.Create(DalFolder entity)
-        {
-            Create(entity.ToOrmFolder());
-        }
+        DalFolder IRepository<DalFolder>.Create(DalFolder entity)
+            => Create(entity.ToOrmFolder()).ToDalFolder();
+
 
         public void Delete(DalFolder entity)
         {
@@ -438,6 +435,22 @@ namespace DAL.Repositories
                                                     && (a.ownerId == folder.ownerId)).AsEnumerable().Select(item => item.ToDalFolder());
         }
 
+        public IEnumerable<DalFolder> GetChildNodes(DalFolder fldr)
+        {
+            if (ReferenceEquals(fldr, null))
+            {
+                var error = new ArgumentNullException(nameof(fldr), "folder can't be null");
+                logger.Error(error, error.Message);
+                throw error;
+            }
+
+            var folder = fldr.ToOrmFolder();
+
+            return context.Set<Folders>().Where(a => (a.leftKey >= folder.leftKey)
+                                                    && (a.rightKey <= folder.rightKey)
+                                                    && (a.ownerId == folder.ownerId)).AsEnumerable().Select(item => item.ToDalFolder());
+        }
+
         public DalFolder GetPreviousLevelParentNode(DalFolder fldr)
         {
             if (ReferenceEquals(fldr, null))
@@ -471,9 +484,7 @@ namespace DAL.Repositories
         #region private members 
 
         private IEnumerable<Folders> GetParentsNodes(Folders folder)
-        {
-            return context.Set<Folders>().Where(a => (a.leftKey <= folder.leftKey) && (a.rightKey >= folder.rightKey)).OrderBy(a => a.leftKey);
-        }
+            => context.Set<Folders>().Where(a => (a.leftKey <= folder.leftKey) && (a.rightKey >= folder.rightKey)).OrderBy(a => a.leftKey);
 
         private long GetMaxId()
         {
@@ -482,7 +493,7 @@ namespace DAL.Repositories
             return (long)Math.Round((double)(id / 10000)) * 10000 + 10000;
         }
 
-        private void Create(Folders e)
+        private Folders Create(Folders e)
         {
             if (ReferenceEquals(e, null))
                 throw new ArgumentNullException(nameof(e), "parametr can't be null");
@@ -501,7 +512,7 @@ namespace DAL.Repositories
 
             e.id = id;
 
-            context.Set<Folders>().Add(e);
+            return context.Set<Folders>().Add(e);
         }
         #endregion
     }

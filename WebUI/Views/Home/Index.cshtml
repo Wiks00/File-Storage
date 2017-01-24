@@ -5,69 +5,90 @@
 <head>
     <title>File manager</title>
     <script src="~/FileExplorer/dhtmlx.js"></script>
+    <link rel="stylesheet" type="text/css" href="~/FileExplorer/codebase/fonts/font_roboto/roboto.css" />
+    <link rel="stylesheet" type="text/css" href="~/FileExplorer/codebase/dhtmlxvault.css" />
     @Scripts.Render("~/bundles/jquery")
     <link rel="stylesheet" type="text/css" href="~/FileExplorer/dhtmlx.css">
+    <script src="~/FileExplorer/codebase/dhtmlxvault.js"></script>
+    <script src="~/FileExplorer/codebase/swfobject.js"></script>
     <style>
         html, body {
-            width: 100%; /*provides the correct work of a full-screen layout*/
-            height: 100%; /*provides the correct work of a full-screen layout*/
-            overflow: hidden; /*hides the default body's space*/
-            margin: 0px; /*hides the body's scrolls*/
+            width: 100%;
+            height: 100%; 
+            overflow: hidden; 
+            margin: 0px; 
         }
     </style>
 </head>
 <body>
 <script type="text/javascript">
-    var GlobalTree;
-    var GlobalToolbar;
+    var myToolbar;
+    var myLayout;
+    var myGrid;
+    var myTree;
+    var myPop;
+    var myVault;
+    var myVaultConf = null;
     dhtmlxEvent(window,
         "load",
         function() {
 
-            var myLayout = new dhtmlXLayoutObject(document.body, "2U");
+            myLayout = new dhtmlXLayoutObject(document.body, "2U");
             myLayout.cells("a").setWidth(250);
             myLayout.cells("a").setText("Files");
             myLayout.cells("b").hideHeader();
 
-            var myGrid = myLayout.cells("b").attachGrid();
-            myGrid.setImagePath("@Url.Content("~/Content/icons/")"); //sets the path to the source images
-            myGrid.setIconsPath("@Url.Content("~/Content/imgs/")"); //sets the path to custom images
-            myGrid.setHeader("&nbsp;,Name,Type,Modified,id"); //sets the header labels
-            myGrid.setColTypes("img,ro,ro,ro,ro"); //sets the types of columns
-            myGrid.setInitWidths("70,250,100,*,0"); //sets the initial widths of columns
-            myGrid.setColAlign("center,left,left,left"); //sets the horizontal alignment
+            myGrid = myLayout.cells("b").attachGrid();
+            myGrid.setImagePath("@Url.Content("~/Content/icons/")");
+            myGrid.setIconsPath("@Url.Content("~/Content/imgs/")");
+            myGrid.setHeader("&nbsp;,Name,Type,Modified,id");
+            myGrid.setColTypes("img,ro,ro,ro,ro");
+            myGrid.setInitWidths("70,250,100,*,0");
+            myGrid.setColAlign("center,left,left,left");
             myGrid.init();
 
-            var myTree = myLayout.cells("a").attachTree();
+            myTree = myLayout.cells("a").attachTree();
             myTree.setImagePath("@Url.Content("~/Content/imgs/")");
             myTree.enableTreeLines(true);
             myTree.enableCheckBoxes(1);
             myTree.enableThreeStateCheckboxes(true);
             myTree.enableItemEditor(true);
 
-            myTree.attachEvent("onSelect",
-                function(id) { //id -the id of the selected item
-                    myGrid.filterBy(4, id);
-                    return true;
-                });
-
-            var myToolbar = myLayout.attachToolbar();
+            myToolbar = myLayout.attachToolbar();
             myToolbar.setIconsPath("@Url.Content("~/Content/icons/")");
-            myToolbar.addText("user", 8, "Welcome back, @HttpContext.Current.User.Identity.Name !");
-            myToolbar.loadStruct("@Url.Content("~/Content/toolbarStruct.xml")");
+            @*myToolbar.addText("user", 8, "Welcome back, @HttpContext.Current.User.Identity.Name !");*@
+            @*myToolbar.loadStruct("@Url.Content("~/Content/toolbarStruct.xml")");*@
 
-            GlobalTree = myTree;
-            GlobalToolbar = myToolbar;
+            window.dhx4.ajax.get('@Url.Action("Configurate", "Home")', function (r) {
+                var t = window.dhx4.s2j(r.xmlDoc.responseText);
+                if (t != null) {
+                    myVaultConf = t;
+                    myToolbar.loadStruct("@Url.Content("~/Content/toolbarStruct.xml")", function () {
+                        myToolbar.addText("user", 9, "Welcome back, @HttpContext.Current.User.Identity.Name !");
+                        myPop = new dhtmlXPopup({ toolbar: myToolbar, id: "home" });
+                        myPop.attachEvent("onShow", function () {
+                            if (myVault == null) {
+                                myVault = myPop.attachVault(350, 200, myVaultConf);
+                                myVault._doUploadFile2 = myVault._doUploadFile;
+                                myVault._doUploadFile = function (a) {
+                                    this.setURL('@Url.Action("LoadFiles","Home")' + "?ID=" + myTree.getSelectedItemId());
+                                    this._doUploadFile2.apply(this, arguments);
+                                }
+                            }
+                        });
+                    });
+                }
+            });
 
-            myTree.attachEvent("onSelect",
+            myTree.attachEvent("onClick",
                 function(id) {
-                    myGrid.filterBy(4, id);
+                    loadGrid(id);
                     return true;
                 });
 
             var oldTitle;
 
-            myTree.attachEvent("onEdit", function (state, id, tree, value) {                
+            myTree.attachEvent("onEdit", function (state, id, tree, value) {
                 if (state === 0)
                     oldTitle = value;
                 if (state === 2) {
@@ -105,10 +126,26 @@
                 });
 
         });
+    function loadGrid(id) {
+        $.ajax({
+            url: '@Url.Action("LoadGrid", "Home")',
+            type: "POST",
+            dataType: "json",
+            data: { id: id },
+            success: function (mydata) {
+                myGrid.clearAll();
+                myGrid.parse(JSON.parse(mydata), "json");
+            },
+            error: function () {
+                if (dhtmlx.message)
+                    dhtmlx.message("Error while loading grid");
+            }
+        });
+    }
 
     function addFolder() {
-        var id = GlobalTree.getSelectedItemId();
-        var title = GlobalToolbar.getValue("input");
+        var id = myTree.getSelectedItemId();
+        var title = myToolbar.getValue("input");
 
         $.ajax({
             url: '@Url.Action("AddFolder", "Home")',
@@ -117,24 +154,24 @@
             data: { title: title, id: id },
             success: function (mydata) {
                 if (dhtmlx.message)
-                    dhtmlx.message("Folder '" + title + "' successfully update");
+                    dhtmlx.message("Folder '" + title + "' successfully created");
                 if(id !== "")
-                    GlobalTree.insertNewChild(mydata.parentId, mydata.id, mydata.title);
+                    myTree.insertNewChild(mydata.parentId, mydata.id, title);
                 else {
-                    GlobalTree.deleteChildItems(mydata.parentId);
-                    GlobalTree.parse(JSON.parse(mydata.data), "json");
+                    myTree.deleteChildItems(mydata.parentId);
+                    myTree.parse(JSON.parse(mydata.data), "json");
                 }
             },
             error: function () {
                 if (dhtmlx.message)
-                    dhtmlx.message("Error while updating new folder");
+                    dhtmlx.message("Error while creating new folder");
             }
         });
     }
 
     function deleteFolder() {
-        var id = GlobalTree.getSelectedItemId();
-        var title = GlobalTree.getItemText(id);
+        var id = myTree.getSelectedItemId();
+        var title = myTree.getItemText(id);
 
         $.ajax({
             url: '@Url.Action("DeleteFolder", "Home")',
@@ -144,11 +181,11 @@
             success: function () {
                 if (dhtmlx.message)
                     dhtmlx.message("Folder '" + title + "' successfully delete");
-                GlobalTree.deleteItem(id,false);
+                myTree.deleteItem(id, false);
             },
             error: function () {
                 if (dhtmlx.message)
-                    dhtmlx.message("Error while deleting new folder");
+                    dhtmlx.message("Error while deleting folder");
             }
         });
     }

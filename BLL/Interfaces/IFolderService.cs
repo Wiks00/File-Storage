@@ -31,7 +31,7 @@ namespace BLL.Interfaces
         IEnumerable<DtoFolder> GetFoldersContainsTitle(string title);
 
         /// <summary>
-        /// Get folders by delegate
+        /// Get Folders by delegate
         /// </summary>
         /// <param name="func">search delegate</param>
         /// <returns>Folders enumeration</returns>
@@ -111,11 +111,18 @@ namespace BLL.Interfaces
         void RemoveAccessToFolderToUsers(DtoFolder folder, params DtoUser[] users);
 
         /// <summary>
-        /// Get child Folders of given Folder
+        /// Get nex level child Folders of given Folder
         /// </summary>
         /// <param name="folder">investigated Folder</param>
         /// <returns>child Folders enumeration</returns>
         IEnumerable<DtoFolder> GetNextLevelChildNodes(DtoFolder folder);
+
+        /// <summary>
+        /// Get all child Folders of given Folder
+        /// </summary>
+        /// <param name="folder">investigated Folder</param>
+        /// <returns>child Folders enumeration</returns>
+        IEnumerable<DtoFolder> GetChildNodes(DtoFolder folder);
 
         /// <summary>
         /// Get parent Folder of given folder

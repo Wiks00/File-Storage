@@ -22,28 +22,24 @@ namespace BLL.Services
             fileRepository = repository;
         }
 
-        public IEnumerable<DtoFile> GetAllFiles()
-        {
-            return fileRepository.GetAll().Select(item => item.ToDtoFile());
-        }
+        public IEnumerable<DtoFile> GetAllFiles() 
+            => fileRepository.GetAll().Select(item => item.ToDtoFile());
+        
 
-        public DtoFile GetFileById(long key)
-        {
-            return fileRepository.GetById(key).ToDtoFile();
-        }
+        public DtoFile GetFileById(long key) 
+            => fileRepository.GetById(key).ToDtoFile();
 
         public IEnumerable<DtoFile> GetFilesContainsTitle(string title)
-        {
-            return
-                fileRepository.GetByPredicate(
-                        file => file.Title.ToLower().Contains(title.ToLower()))
-                    .Select(item => item.ToDtoFile());
-        }
+            => fileRepository.GetByPredicate(file => file.Title.ToLower().Contains(title.ToLower()))
+                                    .Select(item => item.ToDtoFile());
 
-        public void CreateFile(DtoFile e)
+
+        public DtoFile CreateFile(DtoFile e)
         {
-            fileRepository.Create(e.ToDalFile());
+            var file = fileRepository.Create(e.ToDalFile());
             uow.Commit();
+
+            return file.ToDtoFile();
         }
 
         public void DeleteFile(DtoFile e)

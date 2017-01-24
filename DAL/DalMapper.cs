@@ -31,7 +31,7 @@ namespace DAL.Mappers
                 ID = file.id,
                 Data = file.content,
                 DateTime = file.dateTime,
-                Folder = file.Folder.ToDalFolder(),
+                FolderID = file.Folder.id,
                 Title = file.name,
                 FileTypes = new HashSet<DalFileType>(file.FileTypes.Select(item => item.ToDalFileType()))
             };
@@ -137,8 +137,8 @@ namespace DAL.Mappers
                 content = file.Data,
                 dateTime = file.DateTime,
                 name = file.Title,
-                folderId = file.Folder.ID,
-                Folder = file.Folder.ToOrmFolder(),
+                folderId = file.FolderID,
+                Folder = null,
                 FileTypes = new HashSet<FileTypes>(file.FileTypes.Select(item => item.ToOrmFileType()))
             };
         }
@@ -332,7 +332,7 @@ namespace DAL.Mappers
                             return "datetime";
                         case "title":
                             return "name";
-                        case "folder.id":
+                        case "folderid":
                             return "folderId";
                         case "folder":
                             return "folder";

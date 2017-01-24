@@ -23,26 +23,22 @@ namespace BLL.Services
             this.uow = uow;
             folderRepository = repository;
         }
-        public IEnumerable<DtoFolder> GetAllFolders()
-        {
-            return folderRepository.GetAll().Select(item => item.ToDtoFolder());
-        }
+        public IEnumerable<DtoFolder> GetAllFolders() 
+            => folderRepository.GetAll().Select(item => item.ToDtoFolder());
 
-        public DtoFolder GetById(long key)
-        {
-            return folderRepository.GetById(key).ToDtoFolder();
-        }
 
-        public IEnumerable<DtoFolder> GetFoldersContainsTitle(string title)
-        {
-            return folderRepository.GetByPredicate(folder => folder.Title.ToLower().Contains(title.ToLower()))
+        public DtoFolder GetById(long key) 
+            => folderRepository.GetById(key).ToDtoFolder();
+
+
+        public IEnumerable<DtoFolder> GetFoldersContainsTitle(string title) 
+            => folderRepository.GetByPredicate(folder => folder.Title.ToLower().Contains(title.ToLower()))
                     .Select(item => item.ToDtoFolder());
-        }
+
 
         public IEnumerable<DtoFolder> GetFoldersByPredicate(Expression<Func<DtoFolder, bool>> func)
-        {
-            return folderRepository.GetByPredicate(Convert<DtoFolder, DalFolder>(func)).Select(item => item.ToDtoFolder());
-        }
+            => folderRepository.GetByPredicate(Convert<DtoFolder, DalFolder>(func)).Select(item => item.ToDtoFolder());
+
 
         public void CreateRootFolder(long userID)
         {
@@ -106,19 +102,16 @@ namespace BLL.Services
             folderRepository.RemoveAccessToFolder(folder.ToDalFolder(), users.Select(item => item.ToDalUser()).ToArray());
         }
 
-        public IEnumerable<DtoFolder> GetNextLevelChildNodes(DtoFolder folder)
-        {
-            return folderRepository.GetNextLevelChildNodes(folder.ToDalFolder()).Select(item => item.ToDtoFolder());
-        }
+        public IEnumerable<DtoFolder> GetNextLevelChildNodes(DtoFolder folder) 
+            => folderRepository.GetNextLevelChildNodes(folder.ToDalFolder()).Select(item => item.ToDtoFolder());
 
-        public DtoFolder GetPreviousLevelParentNode(DtoFolder folder)
-        {
-            return folderRepository.GetPreviousLevelParentNode(folder.ToDalFolder()).ToDtoFolder();
-        }
+        public IEnumerable<DtoFolder> GetChildNodes(DtoFolder folder) 
+            => folderRepository.GetChildNodes(folder.ToDalFolder()).Select(item => item.ToDtoFolder());
 
-        public IEnumerable<DtoFolder> GetNeighboringNodes(DtoFolder folder)
-        {
-            return folderRepository.GetNeighboringNodes(folder.ToDalFolder()).Select(item => item.ToDtoFolder());
-        }
+        public DtoFolder GetPreviousLevelParentNode(DtoFolder folder) 
+            => folderRepository.GetPreviousLevelParentNode(folder.ToDalFolder()).ToDtoFolder();
+
+        public IEnumerable<DtoFolder> GetNeighboringNodes(DtoFolder folder) 
+            => folderRepository.GetNeighboringNodes(folder.ToDalFolder()).Select(item => item.ToDtoFolder());
     }
 }

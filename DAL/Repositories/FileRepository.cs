@@ -26,9 +26,7 @@ namespace DAL.Repositories
         }
 
         public IEnumerable<DalFile> GetAll()
-        {
-            return context.Set<Files>().Select(item => item.ToDalFile());
-        }
+            => context.Set<Files>().Select(item => item.ToDalFile());
 
         public DalFile GetById(long key)
         {
@@ -54,7 +52,7 @@ namespace DAL.Repositories
             return context.Set<Files>().Where(Convert<DalFile, Files>(func)).Select(item => item.ToDalFile());
         }
 
-        public void Create(DalFile entity)
+        public DalFile Create(DalFile entity)
         {
             if (ReferenceEquals(entity, null))
             {
@@ -62,8 +60,9 @@ namespace DAL.Repositories
                 logger.Error(error, error.Message);
                 throw error;
             }
+            var file = context.Set<Files>().Add(entity.ToOrmFile());
 
-            context.Set<Files>().Add(entity.ToOrmFile());
+            return file.ToDalFile();
         }
 
         public void Delete(DalFile entity)

@@ -22,23 +22,19 @@ namespace BLL.Services
             roleRepository = repository;
         }
 
-        public IEnumerable<DtoRole> GetAllRoles()
-        {
-            return roleRepository.GetAll().Select(item => item.ToDtoRole());
-        }
+        public IEnumerable<DtoRole> GetAllRoles() 
+            => roleRepository.GetAll().Select(item => item.ToDtoRole());
 
         public DtoRole GetRoleByTitle(string title)
-        {
-            return
-                roleRepository.GetByPredicate(role => role.Role.ToLower().Equals(title.ToLower()))
-                    .FirstOrDefault()
-                    .ToDtoRole();
-        }
+            => roleRepository.GetByPredicate(role => role.Role.ToLower().Equals(title.ToLower())).FirstOrDefault()
+                        .ToDtoRole();
 
-        public void CreateRole(DtoRole e)
+        public DtoRole CreateRole(DtoRole e)
         {
-            roleRepository.Create(e.ToDalRole());
+            var role = roleRepository.Create(e.ToDalRole());
             uow.Commit();
+
+            return role.ToDtoRole();
         }
 
         public void DeleteRole(DtoRole e)

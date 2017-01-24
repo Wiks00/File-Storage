@@ -27,9 +27,7 @@ namespace DAL.Repositories
         }
 
         public IEnumerable<DalFileType> GetAll()
-        {
-            return context.Set<FileTypes>().Select(item => item.ToDalFileType());
-        }
+            => context.Set<FileTypes>().Select(item => item.ToDalFileType());
 
         public DalFileType GetById(long key)
         {
@@ -55,7 +53,7 @@ namespace DAL.Repositories
             return context.Set<FileTypes>().Where(Convert<DalFileType,FileTypes>(func)).Select(item => item.ToDalFileType());
         }
 
-        public void Create(DalFileType entity)
+        public DalFileType Create(DalFileType entity)
         {
             if (ReferenceEquals(entity, null))
             {
@@ -64,7 +62,9 @@ namespace DAL.Repositories
                 throw error;
             }
 
-            context.Set<FileTypes>().Add(entity.ToOrmFileType());
+            var fileType = context.Set<FileTypes>().Add(entity.ToOrmFileType());
+
+            return fileType.ToDalFileType();
         }
 
         public void Delete(DalFileType entity)

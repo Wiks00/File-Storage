@@ -15,7 +15,7 @@ namespace DAL.DTO
 
         public long ID { get; set; }
         public byte[] Data { get; set; }
-        public DalFolder Folder { get; set; }
+        public long FolderID { get; set; }
         public DateTime DateTime { get; set; }
         public string Title { get; set; }
         public ICollection<DalFileType> FileTypes { get; set; }

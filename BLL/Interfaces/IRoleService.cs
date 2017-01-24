@@ -27,7 +27,8 @@ namespace BLL.Interfaces
         /// Create new Role
         /// </summary>
         /// <param name="e">inserting Role</param>
-        void CreateRole(DtoRole e);
+        /// <returns>new Role</returns>
+        DtoRole CreateRole(DtoRole e);
 
         /// <summary>
         /// Delete Role

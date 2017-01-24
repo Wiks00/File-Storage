@@ -15,7 +15,7 @@ namespace BLL.DTO
 
         public long ID { get; set; }
         public byte[] Data { get; set; }
-        public DtoFolder Folder { get; set; }
+        public long FolderID { get; set; }
         public DateTime DateTime { get; set; }
         public string Title { get; set; }
         public ICollection<DtoFileType> FileTypes { get; set; }

@@ -28,7 +28,7 @@ namespace BLL.Mappers
                 ID = file.ID,
                 Data = file.Data,
                 DateTime = file.DateTime,
-                Folder = file.Folder.ToDtoFolder(),
+                FolderID = file.FolderID,
                 Title = file.Title,
                 FileTypes = new HashSet<DtoFileType>(file.FileTypes.Select(item => item.ToDtoFileType()))
             };
@@ -134,7 +134,7 @@ namespace BLL.Mappers
                 Data = file.Data,
                 DateTime = file.DateTime,
                 Title = file.Title,
-                Folder = file.Folder.ToDalFolder(),
+                FolderID = file.FolderID,
                 FileTypes = new HashSet<DalFileType>(file.FileTypes.Select(item => item.ToDalFileType()))
             };
         }

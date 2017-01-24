@@ -36,8 +36,9 @@ namespace DAL.Interfaces
         /// Insert the table object into database
         /// </summary>
         /// <param name="entity">inserting object</param>
+        /// <returns>new TEntity object</returns>
         /// <exception cref="ArgumentNullException"></exception>
-        void Create(TEntity entity);
+        TEntity Create(TEntity entity);
 
         /// <summary>
         /// Delete the table object from database

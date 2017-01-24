@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Script.Serialization;
@@ -8,6 +10,7 @@ using System.Xml;
 using System.Xml.Linq;
 using BLL.DTO;
 using BLL.Interfaces;
+using BLL.Services;
 using Newtonsoft.Json;
 using WebUI.Models;
 using static WebUI.Models.Mapper;
@@ -17,15 +20,19 @@ namespace WebUI.Controllers
     [Authorize]
     public class HomeController : Controller
     {
-        private readonly IFolderService fodlerService;
+        private readonly IFolderService folderService;
         private readonly IUserService userService;
+        private readonly IFileTypeService fileTypeService;
+        private readonly IFileService fileService;
 
         private DtoUser user;
 
-        public HomeController(IFolderService fodlerService, IUserService userService)
+        public HomeController(IFolderService fodlerService, IUserService userService, IFileTypeService fileTypeService ,IFileService fileService)
         {
-            this.fodlerService = fodlerService;
+            this.folderService = fodlerService;
             this.userService = userService;
+            this.fileService = fileService;
+            this.fileTypeService = fileTypeService;
 
         }
 
@@ -36,9 +43,9 @@ namespace WebUI.Controllers
                 user = GetUser();
             }
 
-            string jsonText = fodlerService.ToJson(user.ID);
+            string jsonText = folderService.ToTreeJson(user.ID);
 
-            return View(new FolderViewModel { FolderStructJson = jsonText});
+            return View(new FolderViewModel { FolderStructJson = jsonText });
         }
 
         public ActionResult AddFolder(string title,string id)
@@ -53,39 +60,82 @@ namespace WebUI.Controllers
             if (string.IsNullOrEmpty(id))
             {
                 ID = user.Folders.Min(folder => folder.ID);
-                fodlerService.AddFolder(fodlerService.GetById(ID), title);
-                return Json(new {parentId = ID, data = fodlerService.ToJson(user.ID), title = title});
+                folderService.AddFolder(folderService.GetById(ID), title);
+                return Json(new {parentId = ID, data = folderService.ToTreeJson(user.ID)});
             }
 
             long.TryParse(id, out ID);
 
-            DtoFolder newFolder = fodlerService.AddFolder(fodlerService.GetById(ID), title);
+            DtoFolder newFolder = folderService.AddFolder(folderService.GetById(ID), title);
 
-            return Json(new { parentId = id, id = newFolder.ID, title = newFolder.Title });
+            return Json(new { parentId = id, id = newFolder.ID });
         }
 
         public ActionResult EditFolder(string title, long id)
         {
-            if (ReferenceEquals(user, null))
+            if (!ReferenceEquals(title,null))
             {
-                user = GetUser();
+                folderService.UpdateFolderTitle(title, id);
             }
-
-            fodlerService.UpdateFolderTitle(title, id);
-
             return Json("");
         }
 
         public ActionResult DeleteFolder(long id)
         {
-            if (ReferenceEquals(user, null))
+            if (ModelState.IsValid)
             {
-                user = GetUser();
+                folderService.DeleteFolder(folderService.GetById(id));
+            }
+            return Json("");
+        }
+
+        public ActionResult Configurate()
+        {
+            return Json(new { maxFileSize = 2147483647, container = "vaultObj", uploadUrl = Url.Action("LoadFiles","Home")}, JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> LoadFiles(HttpPostedFileBase file, string ID)
+        {
+            if (!ReferenceEquals(file, null) && !string.IsNullOrEmpty(ID)) 
+            {
+                var fileData = new MemoryStream();
+                await file.InputStream.CopyToAsync(fileData);
+
+                if (ReferenceEquals(user, null))
+                {
+                    user = GetUser();
+                }
+
+                long id;
+
+                long.TryParse(ID, out id);
+
+                string format = file.FileName.Split('.')[1];
+                List<DtoFileType> fileTypes = fileTypeService.GetFileTypesByPredicate(fl => fl.Format.Equals(format)).ToList();
+
+                if (!fileTypes.Any())
+                {
+                    fileTypes.Add(fileTypeService.CreateFileType(new DtoFileType
+                    {
+                        Format = format,
+                        TypeName = file.ContentType
+                    }));                    
+                }
+
+                DtoFile newFile = new DtoFile {DateTime = DateTime.Now, Data = fileData.ToArray(), Title = file.FileName, FolderID = id ,FileTypes = fileTypes};
+
+                fileService.CreateFile(newFile);
+
+                return Json(new {state = true, name = file.FileName, size = file.ContentLength});
             }
 
-            fodlerService.DeleteFolder(fodlerService.GetById(id));
-
             return Json("");
+        }
+
+        public ActionResult LoadGrid(long id)
+        {
+            return Json(folderService.GetById(id).ToGridJson());
         }
 
         [Authorize(Roles = "admin")]

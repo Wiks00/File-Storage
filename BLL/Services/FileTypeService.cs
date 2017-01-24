@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using BLL.DTO;
 using BLL.Interfaces;
 using BLL.Mappers;
+using DAL.DTO;
 using DAL.Interfaces;
+using static BLL.Mappers.BllMapper;
 
 namespace BLL.Services
 {
@@ -22,20 +25,24 @@ namespace BLL.Services
             fileTypeRepository = repository;
         }
 
-        public IEnumerable<DtoFileType> GetAllFileTypes()
-        {
-            return fileTypeRepository.GetAll().Select(item => item.ToDtoFileType());
-        }
+        public IEnumerable<DtoFileType> GetAllFileTypes() 
+            => fileTypeRepository.GetAll().Select(item => item.ToDtoFileType());
+        
 
         public DtoFileType GetFileTypeById(long key)
-        {
-            return fileTypeRepository.GetById(key).ToDtoFileType();
-        }
+            => fileTypeRepository.GetById(key).ToDtoFileType();
 
-        public void CreateFileType(DtoFileType e)
+
+        public IEnumerable<DtoFileType> GetFileTypesByPredicate(Expression<Func<DtoFileType, bool>> func)
+            => fileTypeRepository.GetByPredicate(Convert<DtoFileType, DalFileType>(func))
+                    .Select(item => item.ToDtoFileType());
+
+        public DtoFileType CreateFileType(DtoFileType e)
         {
-            fileTypeRepository.Create(e.ToDalFileType());
+            var fileType = fileTypeRepository.Create(e.ToDalFileType());
             uow.Commit();
+
+            return fileType.ToDtoFileType();
         }
 
         public void DeleteFileType(DtoFileType e)

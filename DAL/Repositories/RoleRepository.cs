@@ -26,9 +26,7 @@ namespace DAL.Repositories
         }
 
         public IEnumerable<DalRole> GetAll()
-        {
-            return context.Set<Roles>().Select(item => item.ToDalRole());
-        }
+            => context.Set<Roles>().Select(item => item.ToDalRole());
 
         public DalRole GetById(long key)
         {
@@ -54,12 +52,14 @@ namespace DAL.Repositories
             return context.Set<Roles>().Where(Convert<DalRole,Roles>(func)).Select(item => item.ToDalRole());
         }
 
-        public void Create(DalRole entity)
+        public DalRole Create(DalRole entity)
         {
             if (ReferenceEquals(entity, null))
                 throw new ArgumentNullException(nameof(entity), "parametr can't be null");
 
-            context.Set<Roles>().Add(entity.ToOrmRole());
+            var role = context.Set<Roles>().Add(entity.ToOrmRole());
+
+            return role.ToDalRole();
         }
 
         public void Delete(DalRole entity)

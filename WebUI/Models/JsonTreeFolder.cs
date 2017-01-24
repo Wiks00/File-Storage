@@ -5,15 +5,15 @@ using System.Web;
 
 namespace WebUI.Models
 {
-    public class JsonFolder
+    public class JsonTreeFolder
     {
-        public JsonFolder()
+        public JsonTreeFolder()
         {
-            item = new List<JsonFolder>();
+            item = new List<JsonTreeFolder>();
         }
 
         public long id { get; set; }
         public string text { get; set; }
-        public List<JsonFolder> item { get; set; }
+        public List<JsonTreeFolder> item { get; set; }
     }
 }

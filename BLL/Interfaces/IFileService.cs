@@ -34,7 +34,8 @@ namespace BLL.Interfaces
         /// Create new Files
         /// </summary>
         /// <param name="e">inserting File</param>
-        void CreateFile(DtoFile e);
+        /// <returns>new File</returns>
+        DtoFile CreateFile(DtoFile e);
 
         /// <summary>
         /// Delete File

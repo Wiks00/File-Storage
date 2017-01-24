@@ -35,7 +35,8 @@ namespace BLL.Interfaces
         /// Create new User
         /// </summary>
         /// <param name="e">inserting User</param>
-        void CreateUser(DtoUser e);
+        /// <returns>new User</returns>
+        DtoUser CreateUser(DtoUser e);
 
         /// <summary>
         /// Delete User
