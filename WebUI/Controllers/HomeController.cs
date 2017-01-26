@@ -27,7 +27,7 @@ namespace WebUI.Controllers
 
         private DtoUser user;
 
-        public HomeController(IFolderService fodlerService, IUserService userService, IFileTypeService fileTypeService ,IFileService fileService)
+        public HomeController(IFolderService fodlerService, IUserService userService, IFileTypeService fileTypeService, IFileService fileService)
         {
             this.folderService = fodlerService;
             this.userService = userService;
@@ -48,7 +48,7 @@ namespace WebUI.Controllers
             return View(new FolderViewModel { FolderStructJson = jsonText });
         }
 
-        public ActionResult AddFolder(string title,string id)
+        public ActionResult AddFolder(string title, string id)
         {
             if (ReferenceEquals(user, null))
             {
@@ -61,7 +61,7 @@ namespace WebUI.Controllers
             {
                 ID = user.Folders.Min(folder => folder.ID);
                 folderService.AddFolder(folderService.GetById(ID), title);
-                return Json(new {parentId = ID, data = folderService.ToTreeJson(user.ID)});
+                return Json(new { parentId = ID, data = folderService.ToTreeJson(user.ID) });
             }
 
             long.TryParse(id, out ID);
@@ -73,27 +73,68 @@ namespace WebUI.Controllers
 
         public ActionResult EditFolder(string title, long id)
         {
-            if (!ReferenceEquals(title,null))
+            if (!ReferenceEquals(title, null))
             {
                 folderService.UpdateFolderTitle(title, id);
             }
             return Json("");
         }
 
-        public ActionResult DeleteFolder(long id)
+        public ActionResult EditFile(string title, long id)
         {
-            if (ModelState.IsValid)
+            if (!ReferenceEquals(title, null))
             {
-                folderService.DeleteFolder(folderService.GetById(id));
+                DtoFile file = fileService.GetFileById(id);
+                string format = file.FileTypes.First().Format;
+
+                fileService.UpdateFileTitle(title.Split('.')[0] + $".{format}", id);
             }
             return Json("");
         }
 
-        public ActionResult Configurate()
+        public ActionResult Search(string text)
         {
-            return Json(new { maxFileSize = 2147483647, container = "vaultObj", uploadUrl = Url.Action("LoadFiles","Home")}, JsonRequestBehavior.AllowGet);
+            
+            if (!ReferenceEquals(text, null))
+            {
+                
+            }
+
+            return Json("");
         }
 
+        public ActionResult Delete(long id, string type)
+        {
+            if (type.Equals("Folder"))
+            {
+                var parentFolder = folderService.GetById(id);
+
+                foreach (var folder in folderService.GetChildNodes(parentFolder).Reverse())
+                {
+                    foreach (var file in folder.Files)
+                    {
+                        fileService.DeleteFile(file);
+                    }
+                }
+
+                folderService.DeleteFolder(parentFolder);
+
+                return Json("");
+            }
+            if (type.Equals("File"))
+            {
+                var file = fileService.GetFileById(id);
+                fileService.DeleteFile(file);
+
+                return Json(folderService.ToGridJson(folderService.GetById(file.FolderID)));
+            }
+
+            return Json("");
+        }
+
+        public ActionResult Configurate()
+            => Json(new { maxFileSize = 2147483647, container = "vaultObj", uploadUrl = Url.Action("LoadFiles","Home")}, JsonRequestBehavior.AllowGet);
+        
         [HttpPost]
         public async Task<ActionResult> LoadFiles(HttpPostedFileBase file, string ID)
         {
@@ -134,8 +175,12 @@ namespace WebUI.Controllers
         }
 
         public ActionResult LoadGrid(long id)
+            => Json(folderService.ToGridJson(folderService.GetById(id)));
+
+        public ActionResult LoadFile(long id)
         {
-            return Json(folderService.GetById(id).ToGridJson());
+            var file = fileService.GetFileById(id);
+            return File(file.Data, file.FileTypes.First().TypeName);
         }
 
         [Authorize(Roles = "admin")]

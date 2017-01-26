@@ -1,12 +1,9 @@
 <toolbar>    
-    <item id="back"   type="button" img="left_arrow.png"/>
-    <item id="fwd"    type="button" img="right_arrow.png"/>
-    <item id="reload" type="button" img="reload.png"/>
-    <item id="input"  type="buttonInput" value="Enter folder name" width="120"/>
-    <item id="add"    type="button" img="add.png"    text="Add folder" action ="addFolder"/>
-    <item id="edit"   type="button" img="edit.png"   text="Edit" action ="editFolder"/>
-    <item id="delete" type="button" img="delete.png" text="Delete" action ="deleteFolder"/>
-    <item id="home"   type="button" img="home.png"/>
+    <item id="search" type="button" img="search.png" action ="search"/>
+    <item id="input"  type="buttonInput" value="Type text here" width="120"/>
+    <item id="addfolder"    type="button" img="folder-add.png"    text="Add folder" action ="addFolder"/>
+    <item id="addfile"   type="button" img="document-add.png" text="Upload File"/>
+    <item id="delete" type="button" img="trash-can.png" text="Delete" action ="Delete"/>
     <item id="seper"  type="separator" />
     <item id="logout" type="button" img="home.png" text ="Logout" action ="logout"/>
 </toolbar>

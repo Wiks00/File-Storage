@@ -132,7 +132,7 @@ namespace DAL.Repositories
                 propName = GetEqualProperty(typeof(DalFile).ToString(), memberExpression.Member.Name);
             }          
 
-            Type t = typeof(DalFile);
+            Type t = typeof(Files);
 
             foreach (var entity in context.Set<Files>().Where(Convert<DalFile,Files>(func)))
             {

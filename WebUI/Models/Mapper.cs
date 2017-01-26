@@ -30,12 +30,30 @@ namespace WebUI.Models
         }
 
         /// <summary>
+        /// Convert DtoFolder to json ready format
+        /// </summary>
+        /// <param name="folder">converting folder</param>
+        /// <param name="type">type of fodler</param>
+        /// <returns>Json File</returns>
+        public static JsonGridFile ToGridObject(this DtoFolder folder, string type)
+        {
+            if (ReferenceEquals(folder, null))
+                return null;
+
+            return new JsonGridFile
+            {
+                id = folder.ID,
+                data = new[] { SetIconPath(type), folder.Title, "-", folder.DateTime.ToString("D") }
+            };
+        }
+
+        /// <summary>
         /// Convert DtoFile to json ready format
         /// </summary>
         /// <param name="file">converting file</param>
-        /// <param name="iconPath">path to image</param>
+        /// <param name="type">file type</param>
         /// <returns>Json File</returns>
-        public static JsonGridFile ToGridObject(this DtoFile file,string iconPath = "../icons/grid_file1.png")
+        public static JsonGridFile ToGridObject(this DtoFile file,string type)
         {
             if (ReferenceEquals(file, null))
                 return null;
@@ -43,7 +61,7 @@ namespace WebUI.Models
             return new JsonGridFile
             {
                 id = file.ID,
-                data = new []{ iconPath, file.Title, file.FileTypes.First().TypeName, file.DateTime.ToString("D") }
+                data = new []{ SetIconPath(type), file.Title, file.FileTypes.First().TypeName, file.DateTime.ToString("D") }
             };
         }
 
@@ -72,13 +90,22 @@ namespace WebUI.Models
         /// </summary>
         /// <param name="folder">folder where we will take files</param>
         /// <returns>Json string</returns>
-        public static string ToGridJson(this DtoFolder folder)
+        public static string ToGridJson(this IFolderService service, DtoFolder folder)
         {
             var jsonObj = new { rows = new List<JsonGridFile>() };
+            DtoFolder[] folders = service.GetNextLevelChildNodes(folder).ToArray();
+
+            foreach (var chld in folders)
+            {
+                if(service.GetNextLevelChildNodes(chld).Any() || chld.Files.Any())
+                    jsonObj.rows.Add(chld.ToGridObject("folder"));
+                else
+                    jsonObj.rows.Add(chld.ToGridObject("emptyfolder"));
+            }
 
             foreach (var file in folder.Files)
             {
-                jsonObj.rows.Add(file.ToGridObject());
+                jsonObj.rows.Add(file.ToGridObject(file.FileTypes.First().TypeName));
             }
 
             return new JavaScriptSerializer().Serialize(jsonObj);
@@ -90,16 +117,43 @@ namespace WebUI.Models
 
             folder.item = new List<JsonTreeFolder>(chlds.Select(item => item.ToJsonFolder()));
 
-            foreach (var chld in folder.item)
+            if (folder.item.Any())
             {
-                var posibleChlds =
-                    service.GetNextLevelChildNodes(service.GetById(chld.id)).Select(item => item.ToJsonFolder());
-
-                if (posibleChlds.Any())
+                foreach (var chld in folder.item)
                 {
-                    AddChlds(service, chld);
+                    var posibleChlds =
+                        service.GetNextLevelChildNodes(service.GetById(chld.id)).Select(item => item.ToJsonFolder());
+
+                    if (posibleChlds.Any())
+                        AddChlds(service, chld);
                 }
             }
+        }
+
+        private static string SetIconPath(string type)
+        {
+            if(type.Contains("text"))
+                return "../icons/document-text.png";
+
+            if(type.Contains("video") || type.Contains("audio"))
+                return "../icons/document-play.png";
+
+            if(type.Contains("image"))
+                return "../icons/document-image.png";
+
+            if (type.Contains("image"))
+                return "../icons/document-image.png";
+
+            if (type.Contains("compressed"))
+                return "../icons/document-zip.png";
+
+            if (type.Equals("emptyfolder"))
+                return "../icons/folder-empty.png";
+
+            if (type.Equals("folder"))
+                return "../icons/folders.png";
+
+            return "../icons/document.png";
         }
     }
 }

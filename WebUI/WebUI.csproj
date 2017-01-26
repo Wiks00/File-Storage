@@ -191,7 +191,18 @@
   <ItemGroup>
     <Content Include="Content\icons\add.png" />
     <Content Include="Content\icons\delete.png" />
+    <Content Include="Content\icons\document-add.png" />
+    <Content Include="Content\icons\document-edit.png" />
+    <Content Include="Content\icons\document-image.png" />
+    <Content Include="Content\icons\document-play.png" />
+    <Content Include="Content\icons\document-text.png" />
+    <Content Include="Content\icons\document-zip.png" />
+    <Content Include="Content\icons\document.png" />
     <Content Include="Content\icons\edit.png" />
+    <Content Include="Content\icons\folder-add.png" />
+    <Content Include="Content\icons\folder-empty.png" />
+    <Content Include="Content\icons\folder.png" />
+    <Content Include="Content\icons\folders.png" />
     <Content Include="Content\icons\grid_file1.png" />
     <Content Include="Content\icons\grid_file2.png" />
     <Content Include="Content\icons\grid_folder.png" />
@@ -206,6 +217,8 @@
     <Content Include="Content\gridData.xml">
       <SubType>Designer</SubType>
     </Content>
+    <Content Include="Content\icons\search.png" />
+    <Content Include="Content\icons\trash-can.png" />
     <Content Include="Content\imgs\ar_left.gif" />
     <Content Include="Content\imgs\ar_left_abs.gif" />
     <Content Include="Content\imgs\ar_left_abs_dis.gif" />
@@ -402,11 +415,13 @@
     <Content Include="Content\imgs\leaf.gif" />
     <Content Include="Content\imgs\loading.gif" />
     <Content Include="Content\imgs\lock.gif" />
-    <Content Include="Content\imgs\minus.gif" />
+    <Content Include="Content\imgs\minus2.gif" />
+    <Content Include="Content\imgs\minus5.gif" />
     <Content Include="Content\imgs\paging_page.gif" />
     <Content Include="Content\imgs\paging_pages.gif" />
     <Content Include="Content\imgs\paging_rows.gif" />
-    <Content Include="Content\imgs\plus.gif" />
+    <Content Include="Content\imgs\plus2.gif" />
+    <Content Include="Content\imgs\plus5.gif" />
     <Content Include="Content\imgs\radio_chk0.gif" />
     <Content Include="Content\imgs\radio_chk0_dis.gif" />
     <Content Include="Content\imgs\radio_chk1.gif" />
