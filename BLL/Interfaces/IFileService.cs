@@ -24,11 +24,11 @@ namespace BLL.Interfaces
         DtoFile GetFileById(long key);
 
         /// <summary>
-        /// Get Files that contains titile
+        /// Get Fiels by delegate
         /// </summary>
-        /// <param name="title">title of the search Files</param>
-        /// <returns>Files enumeration</returns>
-        IEnumerable<DtoFile> GetFilesContainsTitle(string title);
+        /// <param name="func">search delegate</param>
+        /// <returns>Fiels enumeration</returns>
+        IEnumerable<DtoFile> GetFielsByPredicate(Expression<Func<DtoFile, bool>> func);
 
         /// <summary>
         /// Create new Files

@@ -26,7 +26,7 @@ namespace DAL.Repositories
         }
 
         public IEnumerable<DalUser> GetAll()
-            => context.Set<Users>().Select(item => item.ToDalUser());
+            => context.Set<Users>().AsEnumerable().Select(item => item.ToDalUser());
 
         public DalUser GetById(long key)
         {
@@ -49,7 +49,7 @@ namespace DAL.Repositories
                 throw error;
             }
 
-            return context.Set<Users>().Where(Convert<DalUser,Users>(func)).Select(item => item.ToDalUser());        
+            return context.Set<Users>().Where(Convert<DalUser,Users>(func)).AsEnumerable().Select(item => item.ToDalUser());        
         }
 
         public DalUser Create(DalUser entity)

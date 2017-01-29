@@ -180,8 +180,8 @@
     <Compile Include="Infrastructure\CaptchaImage.cs" />
     <Compile Include="Infrastructure\NinjectDependencyResolver.cs" />
     <Compile Include="Models\AccountViewModel.cs" />
-    <Compile Include="Models\FolderViewModel.cs" />
-    <Compile Include="Models\JsonGridFile.cs" />
+    <Compile Include="Models\FileExplorerViewModel.cs" />
+    <Compile Include="Models\JsonGridObject.cs" />
     <Compile Include="Models\JsonTreeFolder.cs" />
     <Compile Include="Models\Mapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -207,16 +207,15 @@
     <Content Include="Content\icons\grid_file2.png" />
     <Content Include="Content\icons\grid_folder.png" />
     <Content Include="Content\icons\home.png" />
+    <Content Include="Content\icons\hidden.png" />
     <Content Include="Content\icons\left_arrow.png" />
+    <Content Include="Content\icons\public.png" />
     <Content Include="Content\icons\reload.png" />
     <Content Include="Content\icons\right_arrow.png" />
     <Content Include="Content\bootstrap-theme.css" />
     <Content Include="Content\bootstrap-theme.min.css" />
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
-    <Content Include="Content\gridData.xml">
-      <SubType>Designer</SubType>
-    </Content>
     <Content Include="Content\icons\search.png" />
     <Content Include="Content\icons\trash-can.png" />
     <Content Include="Content\imgs\ar_left.gif" />
@@ -455,7 +454,7 @@
     <Content Include="Content\toolbarStruct.xml">
       <SubType>Designer</SubType>
     </Content>
-    <Content Include="Content\treeStruct.xml">
+    <Content Include="Content\menuStruct.xml">
       <SubType>Designer</SubType>
     </Content>
     <Content Include="favicon.ico" />
@@ -619,9 +618,6 @@
     <Content Include="Views\_ViewStart.cshtml" />
     <Content Include="Views\Shared\Error.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
-    <Content Include="Views\Home\About.cshtml" />
-    <Content Include="Views\Home\Contact.cshtml" />
-    <Content Include="Views\Home\Index_1.cshtml" />
     <Content Include="Views\Account\Index.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
   </ItemGroup>

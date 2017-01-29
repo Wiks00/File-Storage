@@ -17,6 +17,7 @@ using WebUI.Providers;
 
 namespace WebUI.Controllers
 {
+    [HandleError()]
     public class AccountController : Controller
     {
         private readonly IUserService service;

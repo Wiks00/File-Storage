@@ -24,13 +24,6 @@ namespace BLL.Interfaces
         DtoFolder GetById(long key);
 
         /// <summary>
-        /// Get Folders that contains titile
-        /// </summary>
-        /// <param name="title">title of the search Folders</param>
-        /// <returns>Folders enumeration</returns>
-        IEnumerable<DtoFolder> GetFoldersContainsTitle(string title);
-
-        /// <summary>
         /// Get Folders by delegate
         /// </summary>
         /// <param name="func">search delegate</param>

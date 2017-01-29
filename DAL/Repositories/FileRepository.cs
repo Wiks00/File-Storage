@@ -26,7 +26,7 @@ namespace DAL.Repositories
         }
 
         public IEnumerable<DalFile> GetAll()
-            => context.Set<Files>().Select(item => item.ToDalFile());
+            => context.Set<Files>().AsEnumerable().Select(item => item.ToDalFile());
 
         public DalFile GetById(long key)
         {
@@ -49,7 +49,7 @@ namespace DAL.Repositories
                 throw error;
             }
 
-            return context.Set<Files>().Where(Convert<DalFile, Files>(func)).Select(item => item.ToDalFile());
+            return context.Set<Files>().AsEnumerable().Where(Convert<DalFile, Files>(func)).Select(item => item.ToDalFile());
         }
 
         public DalFile Create(DalFile entity)

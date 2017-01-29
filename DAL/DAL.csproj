@@ -70,6 +70,7 @@
     <Compile Include="DTO\DalRole.cs" />
     <Compile Include="DTO\DalUser.cs" />
     <Compile Include="DTO\IEntity.cs" />
+    <Compile Include="FolderEqualityComparer .cs" />
     <Compile Include="Interfaces\IFileRepository.cs" />
     <Compile Include="Interfaces\IFileTypeRepository.cs" />
     <Compile Include="Interfaces\IFolderRepository.cs" />

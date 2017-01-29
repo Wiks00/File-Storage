@@ -23,12 +23,23 @@ namespace WebUI
                       "~/Scripts/bootstrap.js",
                       "~/Scripts/respond.js"));
 
+            bundles.Add(new ScriptBundle("~/FileManager/js").Include(
+                     "~/FileExplorer/dhtmlx.js",
+                     "~/FileExplorer/codebase/dhtmlxvault.js",
+                     "~/FileExplorer/codebase/swfobject.js",
+                     "~/Scripts/Index.js"));
+
             bundles.Add(new StyleBundle("~/Content/css").Include(
                       "~/Content/bootstrap.css",
                       "~/Content/site.css"));
 
             bundles.Add(new StyleBundle("~/Index/css").Include(
                      "~/Content/index.css"));
+
+            bundles.Add(new StyleBundle("~/FileManager/css").Include(
+                     "~/FileExplorer/codebase/fonts/font_roboto/roboto.css",
+                     "~/FileExplorer/codebase/dhtmlxvault.css",
+                     "~/FileExplorer/dhtmlx.css"));
         }
     }
 }

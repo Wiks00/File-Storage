@@ -34,16 +34,24 @@ namespace WebUI.Models
         /// </summary>
         /// <param name="folder">converting folder</param>
         /// <param name="type">type of fodler</param>
+        /// <param name="isPublic">is folder shared</param>
         /// <returns>Json File</returns>
-        public static JsonGridFile ToGridObject(this DtoFolder folder, string type)
+        public static JsonGridObject ToGridObject(this DtoFolder folder, string type,  bool isPublic)
         {
             if (ReferenceEquals(folder, null))
                 return null;
 
-            return new JsonGridFile
+            var publicIcon = "../icons/hidden.png";
+            if (isPublic)
+            {
+                publicIcon = "../icons/public.png";
+            }
+
+
+            return new JsonGridObject
             {
                 id = folder.ID,
-                data = new[] { SetIconPath(type), folder.Title, "-", folder.DateTime.ToString("D") }
+                data = new[] { SetIconPath(type), folder.Title, "-", folder.DateTime.ToString("D"), publicIcon}
             };
         }
 
@@ -53,12 +61,12 @@ namespace WebUI.Models
         /// <param name="file">converting file</param>
         /// <param name="type">file type</param>
         /// <returns>Json File</returns>
-        public static JsonGridFile ToGridObject(this DtoFile file,string type)
+        public static JsonGridObject ToGridObject(this DtoFile file,string type)
         {
             if (ReferenceEquals(file, null))
                 return null;
 
-            return new JsonGridFile
+            return new JsonGridObject
             {
                 id = file.ID,
                 data = new []{ SetIconPath(type), file.Title, file.FileTypes.First().TypeName, file.DateTime.ToString("D") }
@@ -73,9 +81,29 @@ namespace WebUI.Models
         /// <returns>Json string</returns>
         public static string ToTreeJson(this IFolderService service,long userID)
         {
-            JsonTreeFolder jsonArr = new JsonTreeFolder { id = 0 };
+            JsonTreeFolder jsonArr = new JsonTreeFolder { id = 0, text= "root" };
 
             foreach (var folder in service.GetFoldersByPredicate(fldr => fldr.Level == 1 && (fldr.OwnerID == userID)))
+            {
+                JsonTreeFolder jf = folder.ToJsonFolder();
+                AddChlds(service, jf);
+                jsonArr.item.Add(jf);
+            }
+
+            return new JavaScriptSerializer().Serialize(jsonArr);
+        }
+
+        /// <summary>
+        /// Create Json for tree view
+        /// </summary>
+        /// <param name="enumeration">enumeration which to be converted</param>
+        /// <param name="service">folder service</param>
+        /// <returns>Json string</returns>
+        public static string ToTreeJson(this IEnumerable<DtoFolder> enumeration, IFolderService service)
+        {
+            JsonTreeFolder jsonArr = new JsonTreeFolder { id = 0, text = "root" };
+
+            foreach (var folder in enumeration)
             {
                 JsonTreeFolder jf = folder.ToJsonFolder();
                 AddChlds(service, jf);
@@ -90,17 +118,23 @@ namespace WebUI.Models
         /// </summary>
         /// <param name="folder">folder where we will take files</param>
         /// <returns>Json string</returns>
+        /// <exception cref="ArgumentNullException"></exception>
         public static string ToGridJson(this IFolderService service, DtoFolder folder)
         {
-            var jsonObj = new { rows = new List<JsonGridFile>() };
+            if (ReferenceEquals(service, null) || ReferenceEquals(folder, null))
+                throw new ArgumentNullException();
+
+            var jsonObj = new { rows = new List<JsonGridObject>() };
             DtoFolder[] folders = service.GetNextLevelChildNodes(folder).ToArray();
 
             foreach (var chld in folders)
             {
-                if(service.GetNextLevelChildNodes(chld).Any() || chld.Files.Any())
-                    jsonObj.rows.Add(chld.ToGridObject("folder"));
+                bool isPublic = chld.SharedToUsers.Any();
+
+                if (service.GetNextLevelChildNodes(chld).Any() || chld.Files.Any())
+                    jsonObj.rows.Add(chld.ToGridObject("folder", isPublic));
                 else
-                    jsonObj.rows.Add(chld.ToGridObject("emptyfolder"));
+                    jsonObj.rows.Add(chld.ToGridObject("emptyfolder", isPublic));
             }
 
             foreach (var file in folder.Files)
@@ -108,6 +142,34 @@ namespace WebUI.Models
                 jsonObj.rows.Add(file.ToGridObject(file.FileTypes.First().TypeName));
             }
 
+            return new JavaScriptSerializer().Serialize(jsonObj);
+        }
+
+        /// <summary>
+        /// Create Json for Grid view
+        /// </summary>
+        /// <param name="enumeration">enumeration which to be converted</param>
+        /// <param name="service">folder service</param>
+        /// <returns>Json string</returns>
+        public static string ToGridJson(this IEnumerable<IEntity> enumeration, IFolderService service)
+        {
+            var jsonObj = new { rows = new List<JsonGridObject>() };
+
+            foreach (var folder in enumeration.OfType<DtoFolder>())
+            {
+                bool isPublic = folder.SharedToUsers.Any();
+
+                if (service.GetNextLevelChildNodes(folder).Any() || folder.Files.Any())
+                    jsonObj.rows.Add(folder.ToGridObject("folder", isPublic));
+                else
+                    jsonObj.rows.Add(folder.ToGridObject("emptyfolder", isPublic));
+            }
+
+            foreach (var file in enumeration.OfType<DtoFile>())
+            {
+                jsonObj.rows.Add(file.ToGridObject(file.FileTypes.First().TypeName));
+            }
+           
             return new JavaScriptSerializer().Serialize(jsonObj);
         }
 

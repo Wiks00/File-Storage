@@ -30,7 +30,7 @@ namespace DAL.Repositories
         #region iRepository   
 
         public IEnumerable<DalFolder> GetAll()
-            => context.Set<Folders>().Select(item => item.ToDalFolder());
+            => context.Set<Folders>().AsEnumerable().Select(item => item.ToDalFolder());
 
         public DalFolder GetById(long key)
         {
@@ -53,7 +53,7 @@ namespace DAL.Repositories
                 throw error;
             }
 
-            return context.Set<Folders>().Where(Convert<DalFolder,Folders>(func)).Select(item => item.ToDalFolder());
+            return context.Set<Folders>().Where(Convert<DalFolder,Folders>(func)).AsEnumerable().Select(item => item.ToDalFolder());
         }
 
         DalFolder IRepository<DalFolder>.Create(DalFolder entity)
@@ -371,19 +371,27 @@ namespace DAL.Repositories
                 throw error;
             }
 
-            var users = usrs.Select(item => item.ToOrmUser());
-            var folder = fldr.ToOrmFolder();
-           
-            foreach (Users user in users)
+            var folder = context.Set<Folders>().Find(fldr.ID);
+
+            foreach (Users usr in usrs.Select(item => item.ToOrmUser()))
             {
-                folder.UsersShared.Add(user);
+                if (!usr.FoldersShared.Contains(folder, new FolderEqualityComparer()) || !usr.FoldersShared.Where(fld =>
+                                                                                                                         GetChildNodes(fld.ToDalFolder()).Select(item => item.ToOrmFolder())
+                                                                                                                         .Contains(folder, new FolderEqualityComparer()))
+                                                                                                                 .Any())
+                {
+                    var user = context.Set<Users>().Find(usr.id);
 
-                user.FoldersShared.Add(folder);
+                    foreach(var fld in GetChildNodes(fldr).Select(item => item.ToOrmFolder()).Intersect(usr.FoldersShared,new FolderEqualityComparer()))
+                    {
+                        user.FoldersShared.Remove(context.Set<Folders>().Find(fld.id));
+                    }                   
 
-                context.Entry(user).State = EntityState.Modified;
+                    user.FoldersShared.Add(folder);
+
+                    context.Entry(user).State = EntityState.Modified;
+                }
             }
-
-            context.Entry(folder).State = EntityState.Modified;
 
         }
 
@@ -403,19 +411,16 @@ namespace DAL.Repositories
                 throw error;
             }
 
-            var users = usrs.Select(item => item.ToOrmUser());
-            var folder = fldr.ToOrmFolder();
+            var folder = context.Set<Folders>().Find(fldr.ID);
 
-            foreach (Users user in users)
+            foreach (Users usr in usrs.Select(item => item.ToOrmUser()))
             {
-                folder.UsersShared.Remove(user);
+                var user = context.Set<Users>().Find(usr.id);
 
                 user.FoldersShared.Remove(folder);
 
                 context.Entry(user).State = EntityState.Modified;
             }
-
-            context.Entry(folder).State = EntityState.Modified;
         }
 
         public IEnumerable<DalFolder> GetNextLevelChildNodes(DalFolder fldr)

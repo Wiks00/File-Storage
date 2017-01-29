@@ -30,12 +30,6 @@ namespace BLL.Services
         public DtoFolder GetById(long key) 
             => folderRepository.GetById(key).ToDtoFolder();
 
-
-        public IEnumerable<DtoFolder> GetFoldersContainsTitle(string title) 
-            => folderRepository.GetByPredicate(folder => folder.Title.ToLower().Contains(title.ToLower()))
-                    .Select(item => item.ToDtoFolder());
-
-
         public IEnumerable<DtoFolder> GetFoldersByPredicate(Expression<Func<DtoFolder, bool>> func)
             => folderRepository.GetByPredicate(Convert<DtoFolder, DalFolder>(func)).Select(item => item.ToDtoFolder());
 
@@ -100,6 +94,7 @@ namespace BLL.Services
         public void RemoveAccessToFolderToUsers(DtoFolder folder, params DtoUser[] users)
         {
             folderRepository.RemoveAccessToFolder(folder.ToDalFolder(), users.Select(item => item.ToDalUser()).ToArray());
+            uow.Commit();
         }
 
         public IEnumerable<DtoFolder> GetNextLevelChildNodes(DtoFolder folder) 

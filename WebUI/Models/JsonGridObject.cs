@@ -5,11 +5,11 @@ using System.Web;
 
 namespace WebUI.Models
 {
-    public class JsonGridFile
+    public class JsonGridObject
     {
-        public JsonGridFile()
+        public JsonGridObject()
         {
-            data = new string[4];
+            data = new string[5];
         }
         public long id { get; set; }
         public string[] data { get; set; }

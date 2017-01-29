@@ -18,19 +18,11 @@ namespace DAL.Repositories
         }
 
         public void Commit()
-        {
-            if (!ReferenceEquals(Context,null))
-            {
-                Context.SaveChanges();
-            }
-        }
+            => Context?.SaveChanges();
+
 
         public void Dispose()
-        {
-            if (!ReferenceEquals(Context, null))
-            {
-                Context.Dispose();
-            }
-        }
+            => Context?.Dispose();
+
     }
 }

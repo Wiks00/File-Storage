@@ -31,7 +31,7 @@ namespace DAL.Mappers
                 ID = file.id,
                 Data = file.content,
                 DateTime = file.dateTime,
-                FolderID = file.Folder.id,
+                FolderID = file.folderId,
                 Title = file.name,
                 FileTypes = new HashSet<DalFileType>(file.FileTypes.Select(item => item.ToDalFileType()))
             };
@@ -202,7 +202,7 @@ namespace DAL.Mappers
                 dateTime = folder.DateTime,
                 name = folder.Title,
                 ownerId = folder.OwnerID,
-                User = null,
+                User = new Users { id = folder.OwnerID },
                 Files = new HashSet<Files>(folder.Files.Select(item => item.ToOrmFile())),
                 UsersShared = new HashSet<Users>(folder.SharedToUsers.Select(item => new Users{ id = item }))
             };

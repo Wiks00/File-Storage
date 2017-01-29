@@ -8,6 +8,8 @@ using BLL.DTO;
 using BLL.Interfaces;
 using BLL.Mappers;
 using DAL.Interfaces;
+using DAL.DTO;
+using static BLL.Mappers.BllMapper;
 
 namespace BLL.Services
 {
@@ -29,11 +31,9 @@ namespace BLL.Services
         public DtoFile GetFileById(long key) 
             => fileRepository.GetById(key).ToDtoFile();
 
-        public IEnumerable<DtoFile> GetFilesContainsTitle(string title)
-            => fileRepository.GetByPredicate(file => file.Title.ToLower().Contains(title.ToLower()))
-                                    .Select(item => item.ToDtoFile());
-
-
+        public IEnumerable<DtoFile> GetFielsByPredicate(Expression<Func<DtoFile, bool>> func)
+            => fileRepository.GetByPredicate(Convert<DtoFile,DalFile>(func)).Select(item => item.ToDtoFile());
+        
         public DtoFile CreateFile(DtoFile e)
         {
             var file = fileRepository.Create(e.ToDalFile());

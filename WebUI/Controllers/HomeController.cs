@@ -8,15 +8,18 @@ using System.Web.Mvc;
 using System.Web.Script.Serialization;
 using System.Xml;
 using System.Xml.Linq;
+using BLL;
 using BLL.DTO;
 using BLL.Interfaces;
 using BLL.Services;
 using Newtonsoft.Json;
 using WebUI.Models;
 using static WebUI.Models.Mapper;
+using System.CodeDom.Compiler;
 
 namespace WebUI.Controllers
 {
+    [HandleError()]
     [Authorize]
     public class HomeController : Controller
     {
@@ -24,8 +27,9 @@ namespace WebUI.Controllers
         private readonly IUserService userService;
         private readonly IFileTypeService fileTypeService;
         private readonly IFileService fileService;
+        private DtoUser _user;
 
-        private DtoUser user;
+        private DtoUser user => GetUser();
 
         public HomeController(IFolderService fodlerService, IUserService userService, IFileTypeService fileTypeService, IFileService fileService)
         {
@@ -34,27 +38,20 @@ namespace WebUI.Controllers
             this.fileService = fileService;
             this.fileTypeService = fileTypeService;
 
+            
         }
 
         public ActionResult Index()
         {
-            if (ReferenceEquals(user, null))
-            {
-                user = GetUser();
-            }
+            var test = user.SharedFolders.ToTreeJson(folderService);
 
-            string jsonText = folderService.ToTreeJson(user.ID);
-
-            return View(new FolderViewModel { FolderStructJson = jsonText });
+            return View(new FileExplorerViewModel { TreeStructJson = folderService.ToTreeJson(user.ID),
+                                                    UserName = user.Login ,
+                                                    SharedTreeStructJson = user.SharedFolders.ToTreeJson(folderService)});
         }
 
         public ActionResult AddFolder(string title, string id)
         {
-            if (ReferenceEquals(user, null))
-            {
-                user = GetUser();
-            }
-
             long ID;
 
             if (string.IsNullOrEmpty(id))
@@ -71,15 +68,38 @@ namespace WebUI.Controllers
             return Json(new { parentId = id, id = newFolder.ID });
         }
 
+        [HttpPost]
         public ActionResult EditFolder(string title, long id)
         {
             if (!ReferenceEquals(title, null))
             {
                 folderService.UpdateFolderTitle(title, id);
             }
+
             return Json("");
         }
 
+        public ActionResult ShareFolder(long folderId,string usersLogins)
+        {
+            DtoUser[] users = ParseUsers(usersLogins);
+
+            if (users.Length != 0)
+                folderService.ShareFolderToUsers(folderService.GetById(folderId), users);
+
+            return Json("");
+        }
+
+        public ActionResult UnshareFolder(long folderId, string usersLogins)
+        {
+            DtoUser[] users = ParseUsers(usersLogins);
+
+            if (users.Length != 0)
+                folderService.RemoveAccessToFolderToUsers(folderService.GetById(folderId), users);
+
+            return Json("");
+        }
+
+        [HttpPost]
         public ActionResult EditFile(string title, long id)
         {
             if (!ReferenceEquals(title, null))
@@ -92,17 +112,31 @@ namespace WebUI.Controllers
             return Json("");
         }
 
+        [HttpPost]
         public ActionResult Search(string text)
         {
-            
+
             if (!ReferenceEquals(text, null))
             {
-                
+                var folders = user.Folders.Where(folder => folder.Title.IndexOf(text,StringComparison.InvariantCultureIgnoreCase) >= 0);
+
+                List<DtoFile> files = new List<DtoFile>();
+
+                foreach(var folder in user.Folders)
+                {
+                    files.AddRange(folder.Files.Where(file => file.Title.IndexOf(text, StringComparison.InvariantCultureIgnoreCase) >= 0));
+                }
+
+                List<IEntity> searchEnumeration = new List<IEntity>(folders);
+                searchEnumeration.AddRange(files);
+
+                return Json(searchEnumeration.ToGridJson(folderService));
             }
 
             return Json("");
         }
 
+        [HttpPost]
         public ActionResult Delete(long id, string type)
         {
             if (type.Equals("Folder"))
@@ -133,40 +167,45 @@ namespace WebUI.Controllers
         }
 
         public ActionResult Configurate()
-            => Json(new { maxFileSize = 2147483647, container = "vaultObj", uploadUrl = Url.Action("LoadFiles","Home")}, JsonRequestBehavior.AllowGet);
+            => Json(new { maxFileSize = 2147483647, container = "vaultObj", uploadUrl = Url.Action("UploadFiles", "Home")}, JsonRequestBehavior.AllowGet);
         
         [HttpPost]
-        public async Task<ActionResult> LoadFiles(HttpPostedFileBase file, string ID)
+        public async Task<ActionResult> UploadFiles(HttpPostedFileBase file, string ID, string mode)
         {
+            
             if (!ReferenceEquals(file, null) && !string.IsNullOrEmpty(ID)) 
             {
-                var fileData = new MemoryStream();
-                await file.InputStream.CopyToAsync(fileData);
-
-                if (ReferenceEquals(user, null))
+                using (var fileData = new MemoryStream(new byte[file.InputStream.Length]))
                 {
-                    user = GetUser();
-                }
+                    await file.InputStream.CopyToAsync(fileData);
 
-                long id;
+                    long id;
 
-                long.TryParse(ID, out id);
+                    long.TryParse(ID, out id);
 
-                string format = file.FileName.Split('.')[1];
-                List<DtoFileType> fileTypes = fileTypeService.GetFileTypesByPredicate(fl => fl.Format.Equals(format)).ToList();
+                    string format = file.FileName.Split('.')[1];
+                    DtoFileType fileType = fileTypeService.GetFileTypesByPredicate(fl => fl.Format.Equals(format)).FirstOrDefault();
 
-                if (!fileTypes.Any())
-                {
-                    fileTypes.Add(fileTypeService.CreateFileType(new DtoFileType
+                    if (ReferenceEquals(fileType, null))
                     {
-                        Format = format,
-                        TypeName = file.ContentType
-                    }));                    
+                        fileType = fileTypeService.CreateFileType(new DtoFileType
+                        {
+                            Format = format,
+                            TypeName = file.ContentType
+                        });
+                    }                  
+
+                    /*var data = new byte[file.InputStream.Length];
+
+                    fileData.Position = 0;
+                    for (int totalBytesCopied = 0; totalBytesCopied < fileData.Length;)
+                        totalBytesCopied += fileData.Read(data, totalBytesCopied, Convert.ToInt32(fileData.Length) - totalBytesCopied);
+                    */
+
+                    DtoFile newFile = new DtoFile { DateTime = DateTime.Now, Data = fileData.ToArray(), Title = file.FileName, FolderID = id, FileTypes = new[] { fileType } };
+
+                    fileService.CreateFile(newFile);
                 }
-
-                DtoFile newFile = new DtoFile {DateTime = DateTime.Now, Data = fileData.ToArray(), Title = file.FileName, FolderID = id ,FileTypes = fileTypes};
-
-                fileService.CreateFile(newFile);
 
                 return Json(new {state = true, name = file.FileName, size = file.ContentLength});
             }
@@ -175,12 +214,24 @@ namespace WebUI.Controllers
         }
 
         public ActionResult LoadGrid(long id)
-            => Json(folderService.ToGridJson(folderService.GetById(id)));
+        {
+            if (id == 0)
+                id = user.Folders.Min(folder => folder.ID);
+
+            return Json(folderService.ToGridJson(folderService.GetById(id)));
+        }
 
         public ActionResult LoadFile(long id)
         {
             var file = fileService.GetFileById(id);
-            return File(file.Data, file.FileTypes.First().TypeName);
+
+            //Response.BufferOutput = false;
+            return File(file.Data, file.FileTypes.First().TypeName, file.Title);
+        }
+
+        public ActionResult LoadUsers()
+        {
+            return Json("");
         }
 
         [Authorize(Roles = "admin")]
@@ -192,9 +243,18 @@ namespace WebUI.Controllers
         }
 
         [NonAction]
-        private DtoUser GetUser() => 
-            HttpContext.User.Identity.Name.Contains("@") ? userService.GetUserByPredicate(usr => usr.Email.Equals(HttpContext.User.Identity.Name, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault() :
-                                                             userService.GetUserByPredicate(usr => usr.Login.Equals(HttpContext.User.Identity.Name, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+        private DtoUser[] ParseUsers(string ids)
+            => ids.Split(';').Select(item => userService.GetUserByPredicate(user => user.Login.Equals(item.Trim(' '), StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault()).Where(item => !ReferenceEquals(item, null) && item.ID != user.ID).ToArray();
 
+        [NonAction]
+        private DtoUser GetUser()
+        {
+            if (ReferenceEquals(_user, null))
+            {
+                _user = HttpContext.User.Identity.Name.Contains("@") ? userService.GetUserByPredicate(usr => usr.Email.Equals(HttpContext.User.Identity.Name, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault() :
+                                                             userService.GetUserByPredicate(usr => usr.Login.Equals(HttpContext.User.Identity.Name, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+            }
+            return _user;
+        }
     }
 }

@@ -26,7 +26,7 @@ namespace DAL.Repositories
         }
 
         public IEnumerable<DalRole> GetAll()
-            => context.Set<Roles>().Select(item => item.ToDalRole());
+            => context.Set<Roles>().AsEnumerable().Select(item => item.ToDalRole());
 
         public DalRole GetById(long key)
         {
@@ -49,7 +49,7 @@ namespace DAL.Repositories
                 throw error;
             }
 
-            return context.Set<Roles>().Where(Convert<DalRole,Roles>(func)).Select(item => item.ToDalRole());
+            return context.Set<Roles>().AsEnumerable().Where(Convert<DalRole,Roles>(func)).Select(item => item.ToDalRole());
         }
 
         public DalRole Create(DalRole entity)
